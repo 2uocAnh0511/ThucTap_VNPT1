@@ -17,6 +17,9 @@ import BookingTickets from "./pages/client/BookingTickets";
 
 //------------ADMIN-------------
 import OrderGetAll from "./pages/admin/order/getAll";
+import CategoryGetAll from "./pages/admin/category/getAll";
+import CategoryCreate from "./pages/admin/category/Create";
+import CategoryEdit from "./pages/admin/category/Edit";
 
 
 const AppRoutes = () => {
@@ -63,6 +66,12 @@ const AppRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="orders">
           <Route path="getAll" element={<OrderGetAll />} />
+        </Route>
+
+         <Route path="categories">
+          <Route path="getAll" element={<CategoryGetAll />} />
+          <Route path="create" element={<CategoryCreate />} />
+          <Route path="edit/:id" element={<CategoryEdit />} />
         </Route>
 
       </Route>
