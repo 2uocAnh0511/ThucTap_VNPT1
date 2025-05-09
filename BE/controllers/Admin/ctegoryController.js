@@ -121,16 +121,7 @@ class CategoryController {
           message: "Danh mục không tồn tại.",
         });
       }
-      const relatedProducts = await category.getProducts(); // Giả sử CategoryModel có quan hệ với Products
-      if (relatedProducts.length > 0) {
-        return res.status(400).json({
-          status: 400,
-          message: "Không thể xóa danh mục vì có sản phẩm liên quan.",
-        });
-      }
-
       await category.destroy();
-
       res.status(200).json({
         status: 200,
         message: `Xóa danh mục "${category.name}" thành công.`,
