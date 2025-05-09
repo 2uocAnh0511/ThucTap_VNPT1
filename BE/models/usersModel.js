@@ -9,47 +9,54 @@ const UserModel = connection.define('users', {
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: true
-    },
-    password: {
-        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'pending'
+        unique: true,
+        validate: {
+            isEmail: true
+        }
     },
     phone: {
         type: DataTypes.STRING,
         allowNull: true
     },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     avatar: {
         type: DataTypes.STRING,
-        allowNull: false 
+        allowNull: true
     },
     role: {
-        type: DataTypes.ENUM('user','admin'),
+        type: DataTypes.ENUM('user', 'admin'),
         allowNull: false,
         defaultValue: 'user'
     },
     email_verified_at: {
         type: DataTypes.DATE,
-        allowNull: false 
+        allowNull: true
     },
     remember_token: {
         type: DataTypes.STRING,
-        allowNull: false 
+        allowNull: true
     },
     status: {
-        type: DataTypes.ENUM('active','inactive','pending','locked'),
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'locked'),
         allowNull: false,
         defaultValue: 'active'
     },
     lockout_reason: {
         type: DataTypes.STRING,
-        allowNull: false
-    }    
+        allowNull: true
+    }
 }, {
     tableName: 'users',
     timestamps: true,

@@ -1,7 +1,7 @@
 const connection = require('../config/database');
 const { DataTypes } = require('sequelize');
 
-const ProductModel = connection.define('products', {
+const BlogModel = connection.define('blogs', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -11,31 +11,37 @@ const ProductModel = connection.define('products', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    short_description: {
+    slug: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false,
+        unique: true
     },
     content: {
         type: DataTypes.TEXT,
-        allowNull: true
-    },
-    price: {
-        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
+    },
+    short_description: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     image: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    category_id: {
+    user_id: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.TINYINT, // 0 = ẩn, 1 = hiển thị
+        allowNull: false,
+        defaultValue: 1
     }
 }, {
-    tableName: 'products',
+    tableName: 'blogs',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at'
 });
 
-module.exports = ProductModel;
+module.exports = BlogModel;
