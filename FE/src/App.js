@@ -20,6 +20,7 @@ import OrderGetAll from "./pages/admin/order/getAll";
 import CategoryGetAll from "./pages/admin/category/getAll";
 import CategoryCreate from "./pages/admin/category/Create";
 import CategoryEdit from "./pages/admin/category/Edit";
+import CommentGetAll from "./pages/admin/comments/getAll";
 
 
 const AppRoutes = () => {
@@ -73,6 +74,11 @@ const AppRoutes = () => {
           <Route path="create" element={<CategoryCreate />} />
           <Route path="edit/:id" element={<CategoryEdit />} />
         </Route>
+
+        <Route path="comments">
+          <Route path="getAll" element={<CommentGetAll />} />
+        </Route>
+
 
       </Route>
     </Routes>

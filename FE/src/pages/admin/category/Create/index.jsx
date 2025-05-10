@@ -41,19 +41,24 @@ function CategoryCreate() {
         setValue("slug", generateSlug(nameValue));
     }
 
-    const onSubmit = async (data) => {
-        setLoading(true);
-        try {
-            await axios.post(`${Constants.DOMAIN_API}/admin/category/create`, data);
-            toast.success("Thêm danh mục thành công!");
-            navigate("/admin/categories/getAll");
-        } catch (error) {
+   const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+        await axios.post(`${Constants.DOMAIN_API}/admin/category/create`, data);
+        toast.success("Thêm danh mục thành công!");
+        navigate("/admin/categories/getAll");
+    } catch (error) {
+        if (error.response?.status === 409) {
+            toast.error("Tên danh mục đã tồn tại.");
+        } else {
             toast.error("Thêm danh mục thất bại.");
-            console.error(error);
-        } finally {
-            setLoading(false);
         }
-    };
+        console.error(error);
+    } finally {
+        setLoading(false);
+    }
+};
+
 
     return (
         <div className="max-w-screen-xl mx-auto bg-white p-8 rounded shadow mt-8">
