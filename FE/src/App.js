@@ -21,6 +21,10 @@ import CategoryGetAll from "./pages/admin/category/getAll";
 import CategoryCreate from "./pages/admin/category/Create";
 import CategoryEdit from "./pages/admin/category/Edit";
 import CommentGetAll from "./pages/admin/comments/getAll";
+import UserGetAll from "./pages/admin/user/getAll";
+import UserDetail from './pages/admin/user/detail';
+
+
 
 
 const AppRoutes = () => {
@@ -69,7 +73,7 @@ const AppRoutes = () => {
           <Route path="getAll" element={<OrderGetAll />} />
         </Route>
 
-         <Route path="categories">
+        <Route path="categories">
           <Route path="getAll" element={<CategoryGetAll />} />
           <Route path="create" element={<CategoryCreate />} />
           <Route path="edit/:id" element={<CategoryEdit />} />
@@ -77,6 +81,11 @@ const AppRoutes = () => {
 
         <Route path="comments">
           <Route path="getAll" element={<CommentGetAll />} />
+        </Route>
+
+        <Route path="users">
+          <Route path="getAll" element={<UserGetAll />} />
+          <Route path="detail/:id" element={<UserDetail />} />
         </Route>
 
 

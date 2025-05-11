@@ -3,6 +3,8 @@ const router = express.Router();
 const OrderController = require('../controllers/Admin/ordersController');
 const categoryController = require('../controllers/Admin/ctegoryController');
 const CommentController = require('../controllers/Admin/commentController');
+const UserController = require('../controllers/Admin/userController');
+
 
 
 //------------------[ ADMIN ROUTES ]------------------
@@ -21,5 +23,13 @@ router.put('/category/:id', categoryController.update);
 router.delete('/category/:id', categoryController.delete);
 
 router.get('/comments/list', CommentController.getAll);
+
+
+//------------------[ USERS ]------------------
+router.get('/user/list', UserController.get);
+router.get('/user/search', UserController.searchUser);
+router.get('/user/:id', UserController.getById); 
+router.put('/user/:id/status', UserController.updateUserStatus);
+router.post('/user/:id/addresses', UserController.addAddressToUser);
 
 module.exports = router;
