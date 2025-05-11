@@ -6,6 +6,8 @@ const categoryController = require('../controllers/Admin/ctegoryController');
 const CommentController = require('../controllers/Admin/commentController');
 const UserController = require('../controllers/Admin/userController');
 
+const UserController = require('../controllers/Admin/userController');
+
 
 const productControllers = require('../controllers/Admin/productController');
 
