@@ -26,6 +26,9 @@ import UserDetail from './pages/admin/user/detail';
 
 
 
+import ProductGetAll from "./pages/admin/product/getAll";
+import AddProduct from "./pages/admin/product/Create";
+import EditProduct from "./pages/admin/product/Edit";
 
 const AppRoutes = () => {
   return (
@@ -88,6 +91,12 @@ const AppRoutes = () => {
           <Route path="detail/:id" element={<UserDetail />} />
         </Route>
 
+
+         <Route path="products">
+          <Route path="getAll" element={<ProductGetAll />} />
+          <Route path="create" element={<AddProduct />} />
+          <Route path="edit/:id" element={<EditProduct />} /> 
+        </Route>
 
       </Route>
     </Routes>
