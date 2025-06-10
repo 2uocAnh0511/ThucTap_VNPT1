@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require("../config/upload");
+const upload = require("../config/upload");
 const OrderController = require('../controllers/Admin/ordersController');
 const categoryController = require('../controllers/Admin/ctegoryController');
 const CommentController = require('../controllers/Admin/commentController');

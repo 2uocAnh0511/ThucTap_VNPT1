@@ -21,19 +21,7 @@ import CategoryGetAll from "./pages/admin/category/getAll";
 import CategoryCreate from "./pages/admin/category/Create";
 import CategoryEdit from "./pages/admin/category/Edit";
 import CommentGetAll from "./pages/admin/comments/getAll";
-import UserGetAll from "./pages/admin/user/getAll";
-import UserDetail from './pages/admin/user/detail';
 
-import BlogGetAll from "./pages/admin/blogs/getAll";
-import BlogCreate from "./pages/admin/blogs/Create";
-import BlogEdit from "./pages/admin/blogs/Edit";
-
-
-
-
-import ProductGetAll from "./pages/admin/product/getAll";
-import AddProduct from "./pages/admin/product/Create";
-import EditProduct from "./pages/admin/product/Edit";
 
 const AppRoutes = () => {
   return (
@@ -89,23 +77,6 @@ const AppRoutes = () => {
 
         <Route path="comments">
           <Route path="getAll" element={<CommentGetAll />} />
-        </Route>
-
-        <Route path="users">
-          <Route path="getAll" element={<UserGetAll />} />
-          <Route path="detail/:id" element={<UserDetail />} />
-        </Route>
-
-
-         <Route path="products">
-          <Route path="getAll" element={<ProductGetAll />} />
-          <Route path="create" element={<AddProduct />} />
-          <Route path="edit/:id" element={<EditProduct />} /> 
-        </Route>
-         <Route path="blog">
-          <Route path="getAll" element={<BlogGetAll />} />
-          <Route path="create" element={<BlogCreate  />} />
-          <Route path="edit/:id" element={<BlogEdit   />} />
         </Route>
 
 
