@@ -138,10 +138,10 @@ function Aside() {
                 <span className="hide-menu">Quản lý bình luận </span>
               </Link>
             </li>
-            <li className={`sidebar-item ${location.pathname === "/admin/notifications/getAll" ? "active" : ""}`}>
-              <Link className="sidebar-link" to="/admin/notifications/getAll">
+            <li className={`sidebar-item ${location.pathname === "/admin/blog/getAll" ? "active" : ""}`}>
+              <Link className="sidebar-link" to="/admin/blog/getAll">
                 <FaBell />
-                <span className="hide-menu">Quản lý thông báo </span>
+                <span className="hide-menu">Quản lý bài viết </span>
               </Link>
             </li>
           </ul>

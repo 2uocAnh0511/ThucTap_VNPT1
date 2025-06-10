@@ -1,5 +1,6 @@
-const connection = require('../config/database');
 const { DataTypes } = require('sequelize');
+const connection = require('../config/database');
+const UserModel = require('./usersModel'); // Import UserModel để tạo quan hệ
 
 const BlogModel = connection.define('blogs', {
     id: {
@@ -33,7 +34,7 @@ const BlogModel = connection.define('blogs', {
         allowNull: true
     },
     status: {
-        type: DataTypes.TINYINT, // 0 = ẩn, 1 = hiển thị
+        type: DataTypes.TINYINT,
         allowNull: false,
         defaultValue: 1
     }
@@ -43,5 +44,8 @@ const BlogModel = connection.define('blogs', {
     createdAt: 'created_at',
     updatedAt: 'updated_at'
 });
+
+// Định nghĩa mối quan hệ giữa Blog và User
+BlogModel.belongsTo(UserModel, { foreignKey: 'user_id', as: 'user' });
 
 module.exports = BlogModel;

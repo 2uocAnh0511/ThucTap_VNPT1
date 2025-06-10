@@ -24,6 +24,11 @@ import CommentGetAll from "./pages/admin/comments/getAll";
 import UserGetAll from "./pages/admin/user/getAll";
 import UserDetail from './pages/admin/user/detail';
 
+import BlogGetAll from "./pages/admin/blogs/getAll";
+import BlogCreate from "./pages/admin/blogs/Create";
+import BlogEdit from "./pages/admin/blogs/Edit";
+
+
 
 
 import ProductGetAll from "./pages/admin/product/getAll";
@@ -97,6 +102,12 @@ const AppRoutes = () => {
           <Route path="create" element={<AddProduct />} />
           <Route path="edit/:id" element={<EditProduct />} /> 
         </Route>
+         <Route path="blog">
+          <Route path="getAll" element={<BlogGetAll />} />
+          <Route path="create" element={<BlogCreate  />} />
+          <Route path="edit/:id" element={<BlogEdit   />} />
+        </Route>
+
 
       </Route>
     </Routes>

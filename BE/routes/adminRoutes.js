@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const upload = require("../config/upload")
+const upload = require("../config/upload");
 const OrderController = require('../controllers/Admin/ordersController');
 const categoryController = require('../controllers/Admin/ctegoryController');
 const CommentController = require('../controllers/Admin/commentController');
 const UserController = require('../controllers/Admin/userController');
+const BlogController = require('../controllers/Admin/blogController');
 
-const UserController = require('../controllers/Admin/userController');
 
 
 const productControllers = require('../controllers/Admin/productController');
@@ -27,6 +27,12 @@ router.put('/category/:id', categoryController.update);
 router.delete('/category/:id', categoryController.delete);
 
 router.get('/comments/list', CommentController.getAll);
+
+router.get("/blog/list", BlogController.getAll);
+router.get("/blog/:id", BlogController.getById);
+router.post("/blog/create",upload.single("image"), BlogController.create);
+router.put("/blog/:id", BlogController.update);
+router.delete("/blog/:id", BlogController.delete);
 
 
 //------------------[ USERS ]------------------
