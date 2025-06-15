@@ -10,8 +10,16 @@ const CategoryModel = connection.define('categories', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  slug: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   status: {
-    type: DataTypes.STRING, // 👈 kiểu này phải tồn tại nếu bạn lọc bằng `status`
+    type: DataTypes.STRING,
     allowNull: false
   }
 }, {
