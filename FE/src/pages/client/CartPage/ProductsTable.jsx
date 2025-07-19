@@ -52,16 +52,16 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
 
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.variant?.price || 0);
-      const quantity = item.quantity;
+      const price = parseFloat(item.product?.promotion?.discounted_price || item.product?.price || 0);
+      const quantity = parseInt(item.quantity || 0);
       return total + price * quantity;
     }, 0);
   };
 
   const calculateSelectedTotal = () => {
     return cartItems.reduce((total, item) => {
-      if (selectedItems.includes(item.product_variant_id)) {
-        const price = parseFloat(item.variant?.price || 0);
+      if (selectedItems.includes(item.product_id)) {
+        const price = parseFloat(item.product?.promotion?.discounted_price || item.product?.price || 0);
         const quantity = parseInt(item.quantity || 0);
         return total + price * quantity;
       }
@@ -69,11 +69,11 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
     }, 0);
   };
 
-  const handleSelect = (variantId) => {
+  const handleSelect = (productId) => {
     setSelectedItems((prev) =>
-      prev.includes(variantId)
-        ? prev.filter((id) => id !== variantId)
-        : [...prev, variantId]
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
     );
   };
 
@@ -81,15 +81,15 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
     if (selectedItems.length === cartItems.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(cartItems.map((item) => item.product_variant_id));
+      setSelectedItems(cartItems.map((item) => item.product_id));
     }
   };
 
-  const handleConfirmDelete = (productVariantId) => {
-    const item = cartItems.find((c) => c.product_variant_id === productVariantId);
-    const sku = item?.variant?.sku || "sản phẩm";
-    setDeleteItemId(productVariantId);
-    setDeleteMessage(`Bạn có chắc chắn muốn xóa sản phẩm ${sku} này khỏi giỏ hàng?`);
+  const handleConfirmDelete = (productId) => {
+    const item = cartItems.find((c) => c.product_id === productId);
+    const title = item?.product?.title || "sản phẩm";
+    setDeleteItemId(productId);
+    setDeleteMessage(`Bạn có chắc chắn muốn xóa sản phẩm ${title} này khỏi giỏ hàng?`);
     setShowConfirm(true);
   };
 
@@ -104,7 +104,7 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
       });
 
       setCartItems((prevItems) =>
-        prevItems.filter((item) => item.product_variant_id !== id)
+        prevItems.filter((item) => item.product_id !== id)
       );
 
       toast.success("Xóa sản phẩm khỏi giỏ hàng thành công");
@@ -127,7 +127,7 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
     const token = localStorage.getItem("token");
 
     try {
-      await axios.delete(`${Constants.DOMAIN_API}/clear-cart/`, {
+      await axios.delete(`${Constants.DOMAIN_API}/clear-cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -143,13 +143,13 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
     }
   };
 
-  const handleQuantityChange = async (productVariantId, newQuantity) => {
+  const handleQuantityChange = async (productId, newQuantity) => {
     const token = localStorage.getItem("token");
     if (newQuantity < 1) return;
 
     try {
       await axios.put(
-        `${Constants.DOMAIN_API}/update-to-carts/${productVariantId}`,
+        `${Constants.DOMAIN_API}/update-to-carts/${productId}`,
         { quantity: newQuantity },
         {
           headers: {
@@ -157,15 +157,13 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
           }
         }
       );
-      setCartItems([]);
-      toast.success("Cập nhật số lượng thành công");
       await fetchCart();
     } catch (error) {
       toast.error("Cập nhật số lượng thất bại");
     }
   };
 
-  const QuantityInput = ({ quantity, onChange, stock }) => {
+  const QuantityInput = ({ quantity, onChange }) => {
     const handleDecrease = () => {
       if (quantity > 1) {
         onChange(quantity - 1);
@@ -173,11 +171,7 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
     };
 
     const handleIncrease = () => {
-      if (quantity < stock) {
-        onChange(quantity + 1);
-      } else {
-        toast.info("Không thể tăng thêm vì đã đạt số lượng tối đa trong kho");
-      }
+      onChange(quantity + 1);
     };
 
     return (
@@ -192,12 +186,11 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
         <input
           type="number"
           min="1"
-          max={stock}
           step="1"
           value={quantity}
           onChange={(e) => {
             const val = parseInt(e.target.value, 10);
-            if (val >= 1 && val <= stock) {
+            if (val >= 1) {
               onChange(val);
             }
           }}
@@ -223,13 +216,13 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
           className="p-2 rounded-full bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 transition duration-200"
           title="Xóa toàn bộ giỏ hàng"
         >
-          <FaTrashAlt size={18} />
+          <FaTrashAlt size={20} className="font-bold" />
         </button>
       </div>
       <div className="max-h-96 overflow-y-auto w-full">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead>
-            <tr className="text-[13px] font-medium text-black bg-[#F6F6F6] uppercase">
+        <table className="w-full table-fixed text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="sticky top-0 bg-[#F6F6F6] z-10">
+            <tr className="text-[13px] font-medium text-black uppercase">
               <th className="py-4 text-center w-[50px]">
                 <input
                   type="checkbox"
@@ -237,51 +230,42 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
                   checked={selectedItems.length === cartItems.length && cartItems.length > 0}
                 />
               </th>
-              <th className="py-4 pl-10 min-w-[300px]">Sản phẩm</th>
-              <th className="py-4 text-center">Thuộc tính</th>
-              <th className="py-4 text-center">Giá tiền</th>
-              <th className="py-4 text-center">Số lượng</th>
-              <th className="py-4 text-center">Tổng tiền</th>
-              <th className="py-4 text-right w-[114px]"></th>
+              <th className="py-4 pl-10 w-[320px]">Sản phẩm</th>
+              <th className="py-4 text-center w-[180px]"></th>
+              <th className="py-4 text-center w-[120px]">Giá tiền</th>
+              <th className="py-4 text-center w-[140px]">Số lượng</th>
+              <th className="py-4 text-center w-[140px]">Tổng tiền</th>
+              <th className="py-4 text-right w-[80px]"></th>
             </tr>
           </thead>
-        </table>
-
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <tbody>
             {cartItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-6 text-gray-500">
+                <td colSpan={6} className="text-center py-6 text-gray-500">
                   Giỏ hàng trống.
                 </td>
               </tr>
             ) : (
               cartItems.map((item) => {
-                const variant = item.variant;
-                const image = variant?.images?.[0]?.image_url || "";
-                const attributes = variant.attributeValues || [];
-                const price = parseFloat(variant.price);
+                const product = item.product;
+                const image = product?.image || "";
+                const originalPrice = parseFloat(product.price || 0);
+                const price = parseFloat(product.promotion?.discounted_price || product.price || 0);
+                const discountPercent = parseFloat(product.promotion?.discount_percent || 0);
                 const quantity = item.quantity;
-                const stock = variant.stock;
                 const total = price * quantity;
 
                 return (
                   <tr
                     key={item.id}
-                    className={`bg-white border-b hover:bg-gray-50 ${stock === 0 ? "opacity-50" : ""}`}
+                    className="bg-white border-b hover:bg-gray-50"
                   >
                     <td className="text-center">
-                      {stock === 0 ? (
-                        <span title="Sản phẩm hết hàng, không thể chọn" className="cursor-help text-red-500">
-                        </span>
-                      ) : (
-                        <input
-                          type="checkbox"
-                          disabled={stock === 0}
-                          checked={selectedItems.includes(item.product_variant_id)}
-                          onChange={() => stock !== 0 && handleSelect(item.product_variant_id)}
-                        />
-                      )}
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item.product_id)}
+                        onChange={() => handleSelect(item.product_id)}
+                      />
                     </td>
                     <td className="pl-10 py-4">
                       <div className="flex space-x-6 items-center">
@@ -293,63 +277,44 @@ const ProductsTable = ({ className, onTotalChange, onSelectedItemsChange, onCart
                           />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-[15px] text-qblack">{variant.sku}</p>
+                          <p className="font-medium text-[15px] text-qblack">{product.title}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="text-center py-4">
-                      {attributes.map((attr) => {
-                        const attrName = attr.attribute?.name;
-                        const attrValue = attr.value;
-                        const isColor = attrName.toLowerCase() === "color";
-
-                        return (
-                          <div key={attr.id} className="flex items-center justify-center gap-2">
-                            <span>{attrName}:</span>
-                            {isColor ? (
-                              <span
-                                className="inline-block w-4 h-4 rounded-full border border-gray-300"
-                                style={{ backgroundColor: attrValue }}
-                              ></span>
-                            ) : (
-                              <span>{attrValue}</span>
-                            )}
-                          </div>
-                        );
-                      })}
+                    <td className="py-4 px-2 w-[180px] align-top">
                     </td>
                     <td className="text-center py-4">
-                      {Number(price).toLocaleString("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      })}
-                    </td>
-                    <td className="py-4 flex flex-col items-center justify-center mt-5">
-                      {stock === 0 ? (
-                        <span className="text-sm text-red-500">Hết hàng</span>
-                      ) : (
-                        <>
-                          <QuantityInput
-                            quantity={quantity}
-                            stock={stock}
-                            onChange={(newQuantity) => handleQuantityChange(item.product_variant_id, newQuantity)}
-                          />
-                          <span className="mt-2 text-sm text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
-                            Còn lại: {stock}
+                      <div className="flex flex-col items-center gap-1">
+                        <span className={`font-semibold ${discountPercent > 0 ? "text-red-500" : "text-black"}`}>
+                          {Number(price).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+                        </span>
+                        {discountPercent > 0 && price < originalPrice && (
+                          <span className="text-black-400 line-through text-xs">
+                            {Number(originalPrice).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                           </span>
-                        </>
-                      )}
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 text-center align-middle">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <QuantityInput
+                          quantity={quantity}
+                          onChange={(newQuantity) =>
+                            handleQuantityChange(item.product_id, newQuantity)
+                          }
+                        />
+                      </div>
                     </td>
                     <td className="text-center py-4">
-                      {total.toLocaleString("vi-VN")}₫
+                      {Number(total).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                     </td>
                     <td className="text-right py-4">
                       <button
-                        onClick={() => handleConfirmDelete(item.product_variant_id)}
+                        onClick={() => handleConfirmDelete(item.product_id)}
                         className="p-2 rounded-full bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 transition duration-200"
                         title="Xóa sản phẩm"
                       >
-                        <FaTrashAlt size={18} />
+                        <FaTrashAlt size={20} className="font-bold" />
                       </button>
                     </td>
                   </tr>

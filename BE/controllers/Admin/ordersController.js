@@ -1,5 +1,4 @@
 const OrderModel = require('../../models/ordersModel');
-const OrderItemsModel = require('../../models/orderItemsModel');
 const ProductModel = require('../../models/productsModel');
 const { Op } = require('sequelize');
 

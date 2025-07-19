@@ -7,7 +7,6 @@ const OrderModel = require('../models/ordersModel');
 const CategoryModel = require('../models/categoryModel');
 const CartModel = require('../models/cartsModel');
 const BrandModel = require('../models/brandsModel');
-const OrderItemsModel = require('../models/orderItemsModel');
 
 //--------------------- [ Thiết lập quan hệ ]------------------------
 
@@ -50,16 +49,6 @@ CartModel.belongsTo(ProductModel, { foreignKey: 'product_id', as: 'product' });
 // ProductModel.belongsTo(BrandModel, { foreignKey: 'brand_id', as: 'brand' });
 
 
-// Orders - OrderItems
-OrderModel.hasMany(OrderItemsModel, { foreignKey: 'order_id', as: 'orderDetails' });
-OrderItemsModel.belongsTo(OrderModel, { foreignKey: 'order_id', as: 'order'});
-
-// OrderItems - Product
-OrderItemsModel.belongsTo(ProductModel, { foreignKey: 'product_id', as: 'product'});
-ProductModel.hasMany(OrderItemsModel, { foreignKey: 'product_id', as: 'orderItems'});
-  
-
-
 module.exports = {
     UserModel,
     AddressModel,
@@ -70,5 +59,4 @@ module.exports = {
     CategoryModel,
     CartModel,
     BrandModel,
-    OrderItemsModel
 };

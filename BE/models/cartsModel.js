@@ -33,14 +33,14 @@ const CartModel = connection.define('carts', {
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    hooks: {
-        beforeCreate: (cart, options) => {
-            cart.total_price = cart.quantity * cart.price;
-        },
-        beforeUpdate: (cart, options) => {
-            cart.total_price = cart.quantity * cart.price;
-        }
-    }
+    // hooks: {
+    //     beforeCreate: (cart, options) => {
+    //         cart.total_price = cart.quantity * cart.price;
+    //     },
+    //     beforeUpdate: (cart, options) => {
+    //         cart.total_price = cart.quantity * cart.price;
+    //     }
+    // }
 });
 
 module.exports = CartModel;

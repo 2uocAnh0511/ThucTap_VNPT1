@@ -25,19 +25,24 @@ const AddressModel = connection.define('address', {
     },
     district: {
         type: DataTypes.STRING,
-        allowNull: false 
+        allowNull: false
     },
     province: {
         type: DataTypes.STRING,
-        allowNull: false 
+        allowNull: false
     },
     postal_code: {
         type: DataTypes.STRING,
-        allowNull: false 
+        allowNull: false
     },
     is_default: {
         type: DataTypes.TINYINT,
-        allowNull: false 
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.TINYINT,
+        allowNull: false,
+        defaultValue: 1 // 1: active, 0: deleted
     }
 }, {
     tableName: 'address',
