@@ -11,26 +11,21 @@ const Order = sequelize.define("Order", {
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        // Bạn có thể thêm ràng buộc để tham chiếu tới bảng User nếu cần
-        // references: {
-        //     model: 'users',
-        //     key: 'id'
-        // }
     },
     status: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "Chờ xác nhận", // Giá trị mặc định là "Đã xác nhận"
+        defaultValue: "Chờ xác nhận",
     },
-    total_price: { // Trường này lưu tổng giá trị đơn hàng
-        type: DataTypes.DECIMAL(10, 2),
+    total_price: {
+        type: DataTypes.DECIMAL(20, 2),
         allowNull: false,
-        defaultValue: 0.00, // Giá trị mặc định là 0
+        defaultValue: 0.00,
     }
+
 }, {
-    tableName: "orders", // Tên bảng trong cơ sở dữ liệu
-    timestamps: true, // Không sử dụng timestamps (createdAt, updatedAt)
+    tableName: "orders",
+    timestamps: true,
 });
 
-// Xuất model để sử dụng ở các nơi khác trong ứng dụng
 module.exports = Order;

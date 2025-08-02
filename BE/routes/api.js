@@ -20,13 +20,6 @@ router.put("/categories/:id",CategoryControllers.update);
 router.delete("/categories/:id", CategoryControllers.delete);
 
 
-// product
-// router.get("/products", productControllers.getAll);
-// router.post("/products", upload.single('image'), productControllers.create);
-// router.get("/products/:id", productControllers.detail);
-// router.put("/products/:id", upload.single('image'), productControllers.update);
-// router.delete("/products/:id", productControllers.delete);
-
 router.get('/', productControllers.home)
 router.get('/products',  upload.single('image'), productControllers.products)
 router.get('/addproducts',  upload.single('image'), productControllers.addproducts)
@@ -50,7 +43,6 @@ router.delete("/users/:id", userControllers.delete);
 router.get("/userstatistics", userStatisticsControllers.getUserStatistics);
 // comment
 // router.get("/products/:productId/comments", commentControllers.getAll);
-router.get("/:productId/comments", commentControllers.getByProduct);
 router.get("/comments/:id", commentControllers.detail);
 router.post("/comments", commentControllers.create);
 // router.put("/comments/:id", commentControllers.update);
@@ -84,7 +76,8 @@ router.get("/orders", orderController.getAllOrders);
 router.get("/orders/:id", orderController.getOrderById);
 router.post("/orders", orderController.createOrder);
 router.put("/orders/:id", orderController.updateOrder);
-router.delete("/:id", orderController.deleteOrder);
+router.delete("/orders/:id", orderController.deleteOrder);
+router.put("/orders/:id/cancel", orderController.cancelOrder);
 
 // Order Details
 router.post("/orders/details/:id", orderController.addOrderDetail);
@@ -93,11 +86,9 @@ router.get("/orders/detail_user/:id", orderController.getOrderDetailsByUserId);
 
 // Thống kê
 
-// router.get("/statistics/stock-status", statisticsController.stockStatus);
 
 router.get('/statistics', statisticsController.getProductStatistics);
-module.exports = router;
-
+router.get("/:productId/comments", commentControllers.getByProduct);
 
 
 module.exports = router;

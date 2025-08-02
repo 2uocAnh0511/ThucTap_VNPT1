@@ -1,10 +1,7 @@
-
 const { Order, User, OrderDetail } = require("../../models");
-
 const Product = require("../../models/product");
 const Cart = require('../../models/cart');
 
-// Lấy tất cả đơn hàng
 exports.getAllOrders = async (req, res) => {
     try {
         const orders = await Order.findAll({
@@ -29,68 +26,61 @@ exports.getAllOrders = async (req, res) => {
     }
 };
 
-// Lấy đơn hàng theo ID
 exports.getOrderById = async (req, res) => {
-    
-        try {
-          const order = await Order.findByPk(req.params.id, {
+
+    try {
+        const order = await Order.findByPk(req.params.id, {
             include: [
-              {
-                model: OrderDetail,
-                as: "order_details",
-                include: [
-                  {
-                    model: Product,
-                    as: "product",
-                    attributes: ["id", "price"],
-                  },
-                ],
-              },
-              {
-                model: User, // Thêm phần này để lấy thông tin người dùng
-                as: "user",  // Đảm bảo đúng alias nếu có đặt alias trong quan hệ
-                attributes: ["id", "name",], // Các trường cần lấy
-              },
+                {
+                    model: OrderDetail,
+                    as: "order_details",
+                    include: [
+                        {
+                            model: Product,
+                            as: "product",
+                            attributes: ["id", "price"],
+                        },
+                    ],
+                },
+                {
+                    model: User,
+                    as: "user",
+                    attributes: ["id", "name",],
+                },
             ],
-          });
-      
-          if (!order)
+        });
+
+        if (!order)
             return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
-      
-          res.json(order);
-        } catch (error) {
-          console.error("Lỗi khi lấy đơn hàng:", error);
-          res.status(500).json({ message: "Lỗi khi lấy đơn hàng", error });
-        }
-      };
+
+        res.json(order);
+    } catch (error) {
+        console.error("Lỗi khi lấy đơn hàng:", error);
+        res.status(500).json({ message: "Lỗi khi lấy đơn hàng", error });
+    }
+};
 
 
-// Tạo đơn hàng mới
 exports.createOrder = async (req, res) => {
     const { user_id } = req.body;
 
     try {
-        // B1: Tạo đơn hàng mới chưa có tổng tiền
         const order = await Order.create({ user_id, status: "Chờ xác nhận" });
 
-        // B2: Lấy toàn bộ giỏ hàng của user kèm thông tin sản phẩm
         const cartItems = await Cart.findAll({
             where: { user_id },
             include: [{ model: Product, as: 'product' }]
         });
 
-        // B3: Chuẩn bị dữ liệu order_details từ giỏ hàng
         const orderDetailsData = cartItems.map(item => ({
             order_id: order.id,
             product_id: item.product_id,
             qty: item.qty,
-            price: item.product.price // Lưu giá sản phẩm tại thời điểm đặt hàng
+            price: item.product.price
         }));
 
-        // B4: Tạo dữ liệu trong bảng order_details
         await OrderDetail.bulkCreate(orderDetailsData);
 
-        // B5: Tính tổng giá trị đơn hàng từ order_details (price * qty)
         const orderDetails = await OrderDetail.findAll({
             where: { order_id: order.id },
             attributes: ['price', 'qty']
@@ -100,10 +90,8 @@ exports.createOrder = async (req, res) => {
             return sum + item.price * item.qty;
         }, 0);
 
-        // B6: Cập nhật tổng tiền vào bảng orders
         await Order.update({ total_price: totalPrice }, { where: { id: order.id } });
 
-        // B7 (tùy chọn): Xoá giỏ hàng sau khi đặt hàng
         await Cart.destroy({ where: { user_id } });
 
         res.status(201).json({ message: "Tạo đơn hàng thành công", order });
@@ -114,12 +102,6 @@ exports.createOrder = async (req, res) => {
 };
 
 
-
-
-
-
-
-// Cập nhật đơn hàng
 exports.updateOrder = async (req, res) => {
     try {
         const updated = await Order.update(req.body, {
@@ -131,7 +113,6 @@ exports.updateOrder = async (req, res) => {
     }
 };
 
-// Xóa đơn hàng
 exports.deleteOrder = async (req, res) => {
     try {
         await Order.destroy({ where: { id: req.params.id } });
@@ -177,7 +158,6 @@ exports.getOrderDetailsByUserId = async (req, res) => {
         const orders = await Order.findAll({
             where: {
                 user_id,
-                status: "Đã giao" ,
             },
             include: [
                 {
@@ -209,5 +189,32 @@ exports.getOrderDetailsByUserId = async (req, res) => {
             message: "Lỗi server khi lấy chi tiết đơn hàng theo người dùng",
             error,
         });
+    }
+};
+
+exports.cancelOrder = async (req, res) => {
+    const orderId = req.params.id;
+    const { cancellation_reason } = req.body;
+
+    try {
+        const order = await Order.findByPk(orderId);
+        if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+
+        if (order.status !== "Chờ xác nhận") {
+            return res.status(400).json({ message: "Chỉ có thể hủy đơn hàng đang chờ xác nhận" });
+        }
+
+        await Order.update(
+            {
+                status: "Đã hủy",
+                cancellation_reason,
+            },
+            { where: { id: orderId } }
+        );
+
+        res.status(200).json({ message: "Đơn hàng đã được hủy thành công" });
+    } catch (error) {
+        console.error("Lỗi khi hủy đơn hàng:", error);
+        res.status(500).json({ message: "Lỗi khi hủy đơn hàng", error });
     }
 };
