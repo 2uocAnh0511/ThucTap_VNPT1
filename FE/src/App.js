@@ -35,6 +35,7 @@ import CategoryAdmin from './components/Admin/Pages/Categories';
 import AddCategory from './components/Admin/Pages/Categories/addcategory';
 import EditCategory from './components/Admin/Pages/Categories/editcategory';
 import UsersAdmin from './components/Admin/Pages/Users';
+import ViewUser from './components/Admin/Pages/Users/detail';
 import AddUser from './components/Admin/Pages/Users/adduser';
 import EditUser from './components/Admin/Pages/Users/edituser';
 import OrderList from './components/Admin/Pages/Order';
@@ -46,6 +47,10 @@ import PromotionGetAll from './components/Admin/Pages/promotions/getAll';
 import PromotionCreate from './components/Admin/Pages/promotions/Create';
 import PromotionEdit from './components/Admin/Pages/promotions/Edit';
 import PromotionList from './components/Admin/Pages/promotionUsers/getAll';
+import Blog from './components/Admin/Pages/Blog';
+import AddBlog from './components/Admin/Pages/Blog/addBlog';
+import EditBlog from './components/Admin/Pages/Blog/editBlog';
+
 function App() {
   return (
     <>
@@ -98,7 +103,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="profile"
             element={
               <ProtectedRoute allowedRoles={[0, 1]}>
@@ -138,19 +143,26 @@ function App() {
           <Route path="user" element={<UsersAdmin />} />
           <Route path="user/addUser" element={<AddUser />} />
           <Route path="user/editUser" element={<EditUser />} />
+          <Route path="users/viewUser/:id" element={<ViewUser />} />
+
+          
 
           <Route path="order" element={<OrderList />} />
           <Route path="order/:id" element={<OrderDetail />} />
 
           <Route path="comments" element={<Comment />} />
+          <Route path="blogs" element={<Blog />} />
+          <Route path="blogs/addBlog" element={<AddBlog />} />
+          <Route path="blogs/editBlog/:id" element={<EditBlog />} />
 
-           <Route path="promotions">
+
+          <Route path="promotions">
             <Route path="getAll" element={<PromotionGetAll />} />
             <Route path="create" element={<PromotionCreate />} />
             <Route path="edit/:id" element={<PromotionEdit />} />
             {/* <Route path="applied/:id" element={<PromotionOrderListModal />} /> */}
           </Route>
-            <Route path="promotionusers">
+          <Route path="promotionusers">
             <Route path="getAll" element={<PromotionList />} />
           </Route>
         </Route>

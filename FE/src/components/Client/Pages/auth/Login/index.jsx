@@ -26,10 +26,7 @@ const Login = () => {
         email: data.email,
         password: data.password,
       });
-      console.log("Data gửi lên:", data);
 
-
-      // console.log("Response from server:", res.data);
 
       if (res.data && res.data.token && res.data.user) {
         let expiresDate = new Date();

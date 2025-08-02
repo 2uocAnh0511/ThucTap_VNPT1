@@ -25,7 +25,6 @@ const HeaderAdmin = () => {
         {/* Dropdown Người Dùng */}
         <NavDropdown title={<><FaUsers className="me-2" /> Người Dùng</>} className="text-white">
           <NavDropdown.Item as={Link} to="/admin/user">Danh sách người dùng</NavDropdown.Item>
-          <NavDropdown.Item as={Link} to="/admin/user/addUser">Thêm người dùng</NavDropdown.Item>
         </NavDropdown>
         {/* Dropdown ORDER*/}
         <NavDropdown title={<><FaUsers className="me-2" /> Đơn hàng</>} className="text-white">
@@ -37,6 +36,9 @@ const HeaderAdmin = () => {
         <NavDropdown title={<><FaUsers className="me-2" />Giảm giá</>} className="text-white">
           <NavDropdown.Item as={Link} to="/admin/promotions/getAll">Danh sách giảm giá</NavDropdown.Item>
           <NavDropdown.Item as={Link} to="/admin/promotionusers/getAll">Danh sách khách hàng</NavDropdown.Item>
+        </NavDropdown>
+        <NavDropdown title={<><FaUsers className="me-2" />Bài viết</>} className="text-white">
+          <NavDropdown.Item as={Link} to="/admin/blogs">Danh sách bài viết</NavDropdown.Item>
         </NavDropdown>
       </Nav>
     </div>

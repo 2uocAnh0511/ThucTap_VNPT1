@@ -30,7 +30,8 @@ const Blog = database.define("blogs", {
     defaultValue: 1,
   },
 }, {
-  timestamps: true,
+  timestamps: false,
+  underscored: true, // Sử dụng snake_case cho tên cột
 });
 
 module.exports = Blog;

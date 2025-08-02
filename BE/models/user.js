@@ -36,6 +36,11 @@ const User = database.define(
       allowNull: false,
       defaultValue: 0,
     },
+    status: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+    },
     avatar: {
       type: Sequelize.STRING,
       allowNull: true,

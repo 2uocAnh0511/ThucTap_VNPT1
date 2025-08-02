@@ -1,6 +1,7 @@
-    import React, { useEffect, useState } from 'react';
-    import { Bar, Pie } from 'react-chartjs-2';
-    import {
+
+import React, { useEffect, useState } from 'react';
+import { Bar, Pie } from 'react-chartjs-2';
+import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
@@ -9,23 +10,24 @@
     Tooltip,
     Legend,
     ArcElement
-    } from 'chart.js';
+} from 'chart.js';
+import axios from 'axios';
+import Constants from '../../../Constanst';
 
-    ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
-    // Biểu đồ thống kê sản phẩm
-    export const ProductStatisticsChart = () => {
+// Biểu đồ thống kê sản phẩm
+export const ProductStatisticsChart = () => {
     const [statistics, setStatistics] = useState(null);
 
     useEffect(() => {
         const fetchStatistics = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/api/statistics');
-            const data = await response.json();
-            setStatistics(data);
-        } catch (error) {
-            console.error('Lỗi khi lấy dữ liệu thống kê sản phẩm:', error);
-        }
+            try {
+                const response = await axios.get(`${Constants.DOMAIN_API}/api/statistics`);
+                setStatistics(response.data);
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu thống kê sản phẩm:', error);
+            }
         };
 
         fetchStatistics();
@@ -39,35 +41,34 @@
     const data = {
         labels,
         datasets: [{
-        label: 'Sản phẩm theo danh mục',
-        data: counts,
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            label: 'Sản phẩm theo danh mục',
+            data: counts,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
         }]
     };
 
     const options = {
         responsive: true,
         plugins: {
-        title: { display: true, text: 'Sản phẩm theo danh mục' }
+            title: { display: true, text: 'Sản phẩm theo danh mục' }
         }
     };
 
     return <Bar data={data} options={options} />;
-    };
+};
 
-    // Biểu đồ thống kê người dùng
-    export const UserStatisticsChart = () => {
+// Biểu đồ thống kê người dùng
+export const UserStatisticsChart = () => {
     const [statistics, setStatistics] = useState(null);
 
     useEffect(() => {
         const fetchStatistics = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/api/userstatistics');
-            const data = await response.json();
-            setStatistics(data);
-        } catch (error) {
-            console.error('Lỗi khi lấy dữ liệu thống kê người dùng:', error);
-        }
+            try {
+                const response = await axios.get(`${Constants.DOMAIN_API}/api/userstatistics`);
+                setStatistics(response.data);
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu thống kê người dùng:', error);
+            }
         };
 
         fetchStatistics();
@@ -81,11 +82,11 @@
     const data = {
         labels,
         datasets: [{
-        label: 'Người dùng theo vai trò',
-        data: counts,
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+            label: 'Người dùng theo vai trò',
+            data: counts,
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
         }]
     };
 
     return <Pie data={data} />;
-    };
+};

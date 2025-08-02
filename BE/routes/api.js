@@ -17,6 +17,7 @@ const promotionController = require("../controllers/api/promotionController");
 const PromotionUserController = require("../controllers/api/promotionUserController");
 const EmailController = require("../controllers/api/nodemailerController");
 const contactController = require("../controllers/api/contactController");
+const blogControllers = require('../controllers/api/blogController');
 
 // ---------- CATEGORY ----------
 router.get("/categories", CategoryControllers.getAll);
@@ -37,10 +38,11 @@ router.get("/products/:id", productControllers.getProductById);
 
 // ---------- USER ----------
 router.get("/users", userControllers.getAll);
+router.get('/users/count', userControllers.getStatusCounts);
 router.get("/users/:id", userControllers.detail);
+router.patch("/users/:id/toggle", userControllers.toggleStatus);
 router.post("/users", userControllers.create);
 router.put("/users/:id", userControllers.update);
-router.delete("/users/:id", userControllers.delete);
 
 // ---------- USER STATISTICS ----------
 router.get("/userstatistics", userStatisticsControllers.getUserStatistics);
@@ -80,7 +82,6 @@ router.get("/statistics", statisticsController.getProductStatistics);
 
 router.get('/home', homeController.getHome);
 
-router.get('/home', homeController.getHome);
 router.get('/promotions/list', promotionController.getAll);
 router.get('/promotions/generate-code', promotionController.generateUniquePromoCode);
 router.post("/promotions/create", promotionController.create);
@@ -100,6 +101,13 @@ router.post('/promotionusers/add', PromotionUserController.addUsersToPromotion);
 router.post('/promotions/apply', promotionController.applyDiscount);
 router.get('/active', promotionController.getActivePromotions);
 
+// ---------- BLOG ----------
+router.get("/blogs", blogControllers.getAll);
+router.get("/blogs/:id", blogControllers.getById);
+router.post("/blogs", blogControllers.create); // Bỏ middleware upload
+router.put("/blogs/:id", blogControllers.update); // Bỏ middleware upload
+router.delete("/blogs/:id", blogControllers.delete);
+router.patch("/blogs/:id/toggle", blogControllers.toggleStatus);
 
 router.post('/contact', contactController.sendContactEmail);
 module.exports = router;
