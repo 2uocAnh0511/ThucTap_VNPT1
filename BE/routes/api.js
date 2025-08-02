@@ -13,6 +13,9 @@ const authController = require("../controllers/api/authController");
 const statisticsController = require("../controllers/api/statistics.Controllers");
 const userStatisticsControllers = require("../controllers/api/userStatistics.Controllers");
 const homeController = require('../controllers/api/homeController')
+const promotionController = require("../controllers/api/promotionController");
+const PromotionUserController = require("../controllers/api/promotionUserController");
+const EmailController = require("../controllers/api/nodemailerController");
 
 // ---------- CATEGORY ----------
 router.get("/categories", CategoryControllers.getAll);
