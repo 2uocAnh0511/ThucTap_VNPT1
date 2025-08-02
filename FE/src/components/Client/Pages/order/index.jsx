@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
-<<<<<<< HEAD
 import { useLocation } from "react-router-dom";
-=======
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Image from "react-bootstrap/Image";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
-<<<<<<< HEAD
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { jwtDecode } from "jwt-decode";
@@ -25,39 +21,19 @@ function Orders() {
   const selectedOrderItems = location.state?.checkoutData || [];
   const [orderItems, setOrderItems] = useState(selectedOrderItems);
 
-=======
-import { jwtDecode } from "jwt-decode";
-
-// ... phần import giữ nguyên
-
-function Orders() {
-  const [cookies] = useCookies(["user"]);
-  const [orderItems, setOrderItems] = useState([]);
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
   const [form, setForm] = useState({
     fullName: "",
     address: "",
     phone: "",
-<<<<<<< HEAD
     email: "",
     paymentMethod: "cod",
   });
 
-=======
-    paymentMethod: "cod", // mặc định thanh toán khi nhận hàng
-  });
-
-  // Lấy user ID từ token trong cookie
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
   const getUserIdFromToken = () => {
     const token = document.cookie
       .split("; ")
       .find((row) => row.startsWith("token="))
       ?.split("=")[1];
-<<<<<<< HEAD
-=======
-
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -69,44 +45,15 @@ function Orders() {
     return null;
   };
 
-<<<<<<< HEAD
-=======
-  
-    useEffect(() => {
-      initUserDataFromToken();
-    }, []);
-    
-  
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
   const initUserDataFromToken = () => {
     const token = document.cookie
       .split("; ")
       .find((row) => row.startsWith("token="))
       ?.split("=")[1];
-<<<<<<< HEAD
 
     if (token) {
       try {
         const decoded = jwtDecode(token);
-=======
-  
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const userId = decoded.id;
-  
-        // Gọi API lấy giỏ hàng theo user ID
-        axios
-          .get(`http://localhost:3000/api/carts/${userId}`)
-          .then((res) => {
-            setOrderItems(res.data.data);
-          })
-          .catch((err) => {
-            console.error("Lỗi khi tải giỏ hàng:", err);
-          });
-  
-        // Gán thông tin user vào form
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
         setForm((prev) => ({
           ...prev,
           fullName: decoded.name || "",
@@ -119,14 +66,10 @@ function Orders() {
       }
     }
   };
-<<<<<<< HEAD
 
   useEffect(() => {
     initUserDataFromToken();
   }, []);
-=======
-  
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
 
   const getTotal = () => {
     return orderItems.reduce(
@@ -136,11 +79,7 @@ function Orders() {
   };
 
   const formatPrice = (value) => {
-<<<<<<< HEAD
     return value.toLocaleString("vi-VN") + "₫";
-=======
-    return (value ).toLocaleString("vi-VN") + "₫";
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
   };
 
   const handleInputChange = (e) => {
@@ -153,22 +92,17 @@ function Orders() {
 
   const handlePayment = () => {
     const userId = getUserIdFromToken();
-<<<<<<< HEAD
     if (!userId) return toast.error("Không xác định được người dùng!");
 
     if (orderItems.length === 0) {
       return toast.warning("Không có sản phẩm nào để thanh toán.");
     }
-=======
-    if (!userId) return alert("Không xác định được người dùng!");
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
 
     const paymentData = {
       user_id: userId,
       full_name: form.fullName,
       address: form.address,
       phone: form.phone,
-<<<<<<< HEAD
       email: form.email || "",
       payment_method: form.paymentMethod,
       total: getTotal(),
@@ -188,39 +122,15 @@ function Orders() {
       .catch((err) => {
         console.error("Lỗi khi thanh toán:", err);
         toast.error("Thanh toán thất bại. Vui lòng thử lại.");
-=======
-      email: form.email || '',
-      payment_method: form.paymentMethod,
-      total: getTotal(),
-    };
-
-    axios
-      .post("http://localhost:3000/api/orders", paymentData)
-      .then((res) => {
-        alert("Thanh toán thành công!");
-        initUserDataFromToken();
-        // Có thể reset form hoặc load lại danh sách đơn hàng
-      })
-      .catch((err) => {
-        console.error("Lỗi khi thanh toán:", err);
-        alert("Thanh toán thất bại.");
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
       });
   };
 
   return (
     <Container className="mt-4">
-<<<<<<< HEAD
       <ToastContainer />
       <Card className="shadow-sm border-light">
         <Card.Body>
           <h3 className="mb-4">Giỏ Hàng Của Bạn</h3>
-=======
-      <Card className="shadow-sm border-light">
-        <Card.Body>
-          <h3 className="mb-4">Giỏ Hàng Của Bạn</h3>{" "}
-          {/* ✅ Tiêu đề đã sửa ở đây */}
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
           <Table striped bordered hover responsive className="border-light">
             <thead>
               <tr>
@@ -263,7 +173,6 @@ function Orders() {
         </Card.Body>
       </Card>
 
-<<<<<<< HEAD
       <Card className="shadow-sm border-light mt-4">
         <Card.Body>
           <h4 className="mb-4">Thông Tin Thanh Toán</h4>
@@ -337,69 +246,6 @@ function Orders() {
                 Thanh Toán Ngay
               </Button>
             </div>
-=======
-      {/* Form thanh toán */}
-      <Card className="shadow-sm border-light mt-4">
-        <Card.Body>
-          <h4>Thông Tin Thanh Toán</h4>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Họ và tên</Form.Label>
-              <Form.Control
-                type="text"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleInputChange}
-                placeholder="Nhập họ tên..."
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleInputChange}
-                placeholder="Nhập email..."
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Địa chỉ giao hàng</Form.Label>
-              <Form.Control
-                type="text"
-                name="address"
-                value={form.address}
-                onChange={handleInputChange}
-                placeholder="Nhập địa chỉ..."
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Số điện thoại</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={form.phone}
-                onChange={handleInputChange}
-                placeholder="Nhập số điện thoại..."
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Phương thức thanh toán</Form.Label>
-              <Form.Select
-                name="paymentMethod"
-                value={form.paymentMethod}
-                onChange={handleInputChange}
-              >
-                <option value="cod">Thanh toán khi nhận hàng (COD)</option>
-                <option value="banking">Chuyển khoản ngân hàng</option>
-                <option value="momo">Momo</option>
-              </Form.Select>
-            </Form.Group>
-            <Button variant="success" onClick={handlePayment}>
-              Thanh Toán Ngay
-            </Button>
->>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
           </Form>
         </Card.Body>
       </Card>
