@@ -102,6 +102,7 @@ function Header() {
                         <span>Thông tin tài khoản</span>
                       </Link>
 
+<<<<<<< HEAD
                       <Link
                         to="/order_detail"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-blue-600 rounded-md no-underline"
@@ -110,6 +111,8 @@ function Header() {
                         <span>Xem đơn hàng</span>
                       </Link>
 
+=======
+>>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
                       <button className="block px-4 py-2 text-left w-full text-gray-70  0 hover:bg-gray-100" onClick={() => {
                         removeCookie('token', { path: '/' });
                         removeCookie('user', { path: '/' }); // Xóa cả thông tin user

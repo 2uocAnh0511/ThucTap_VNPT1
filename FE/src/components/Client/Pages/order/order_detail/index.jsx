@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+<<<<<<< HEAD
 import Constanst from "../../../../../Constanst";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +11,13 @@ function Order_Detail() {
   const [orders, setOrders] = useState([]);
   const [expandedOrderIds, setExpandedOrderIds] = useState([]);
 
+=======
+
+function Order_Detail() {
+  const [orders, setOrders] = useState([]);
+
+  // Lấy user ID từ cookie
+>>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
   const getUserIdFromToken = () => {
     const token = document.cookie
       .split('; ')
@@ -25,20 +33,33 @@ function Order_Detail() {
     return null;
   };
 
+<<<<<<< HEAD
   const fetchOrders = () => {
     const userId = getUserIdFromToken();
     if (userId) {
       axios.get(`${Constanst.DOMAIN_API}/api/orders/detail_user/${userId}`)
+=======
+  useEffect(() => {
+    const userId = getUserIdFromToken();
+
+    if (userId) {
+      axios.get(`http://localhost:3000/api/orders/detail_user/${userId}`)
+>>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
         .then(res => {
           const ordersData = res.data.data;
           if (Array.isArray(ordersData)) {
             setOrders(ordersData);
+<<<<<<< HEAD
+=======
+            console.log("Tất cả đơn hàng:", ordersData);
+>>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
           }
         })
         .catch(err => {
           console.error("Lỗi khi lấy danh sách đơn hàng:", err);
         });
     }
+<<<<<<< HEAD
   };
 
   useEffect(() => {
@@ -162,6 +183,69 @@ function Order_Detail() {
                 </table>
               </div>
             )}
+=======
+  }, []);
+
+  function formatPrice(price) {
+    const number = Number(price);
+    if (isNaN(number)) {
+      return "Giá không hợp lệ";
+    }
+    return number.toLocaleString('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    });
+  }
+  
+
+  return (
+    <div className="container mt-4">
+      <h2 className="mb-4 fw-bold">Danh sách đơn hàng của bạn</h2>
+
+      {orders.length > 0 ? (
+        orders.map((order, idx) => (
+          <div key={order.id} className="card mb-4 shadow-sm">
+            <div className="card-body">
+              <h5 className="card-title fw-bold">Đơn hàng #{order.id}</h5>
+              <p><strong>Người dùng:</strong> {order.user?.name || "N/A"}</p>
+              <p><strong>Trạng thái:</strong> {order.status || "N/A"}</p>
+              <p><strong>Ngày tạo:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}</p>
+
+              <h6 className="mt-4">Chi tiết đơn hàng</h6>
+              <table className="table table-bordered table-hover text-center mt-2">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th className="text-end">Giá</th>
+                    <th className="text-end">Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(order.order_details) && order.order_details.length > 0 ? (
+                    order.order_details.map((item, index) => (
+                      <tr key={index}>
+                        <td className="align-middle">{item.product?.title || "N/A"}</td>
+                        <td className="align-middle">{item.qty}</td>
+                        <td className="text-end align-middle">{formatPrice(item.price)}</td>
+                        <td className="text-end align-middle">{formatPrice(item.price * item.qty)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4">Không có chi tiết đơn hàng.</td>
+                    </tr>
+                  )}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colSpan="3" className="text-end">Tổng cộng:</th>
+                    <th className="text-end">{formatPrice(order.total_price || 0)}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+>>>>>>> 22408f7aa3788672996b07d02b94359950f58b9d
           </div>
         ))
       ) : (
