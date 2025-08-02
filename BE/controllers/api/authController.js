@@ -4,23 +4,22 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Đăng ký
-// Đăng ký
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
-    console.log(req.body);
+    console.log('Payload register:', req.body);
 
-    // Kiểm tra email đã tồn tại
+    // 1. Kiểm tra email đã tồn tại
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'Email đã tồn tại!' });
     }
 
-    // Mã hóa mật khẩu
+    // 2. Mã hóa mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Tạo người dùng với role = 0
+    // 3. Tạo người dùng với role = 0
     const user = await User.create({
       name,
       email,
@@ -30,8 +29,24 @@ exports.register = async (req, res) => {
       role: 0
     });
 
-    res.status(201).json({
-      message: "Đăng ký thành công!",
+    // 4. Sinh JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        address: user.address
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // 5. Trả về client
+    return res.status(201).json({
+      message: 'Đăng ký thành công!',
+      token,
       user: {
         id: user.id,
         name: user.name,
@@ -40,11 +55,12 @@ exports.register = async (req, res) => {
         address: user.address
       }
     });
-
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error: error.message });
+    console.error('Register error:', error);
+    return res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
 
 // Đăng nhập
 exports.login = async (req, res) => {

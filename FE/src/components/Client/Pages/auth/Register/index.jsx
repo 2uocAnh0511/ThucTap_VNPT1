@@ -30,17 +30,17 @@ export default function Register() {
     setAvatarPreview(URL.createObjectURL(file));
   };
 
+
   const onSubmit = async (data) => {
-    // kiểm validate name maxLength
+    // Validate độ dài name nếu cần
     if (data.name.length > 30) {
       setError("name", { type: "manual", message: "Tên không quá 30 ký tự" });
       return;
     }
     setSubmitting(true);
+
     try {
-      let avatarUrl = null;
-      // nếu có file, upload sau khi đăng ký thành công
-      // Gọi API register trước, không kèm avatar
+      // 1. Gửi register, nhận về token và user
       const res = await axios.post(
         `${Constants.DOMAIN_API}/api/register`,
         {
@@ -51,22 +51,28 @@ export default function Register() {
           password: data.password,
         }
       );
-      if (res.status === 201) {
-        // nếu có avatarFile, upload và update profile
-        if (avatarFile) {
-          const uploadRes = await uploadToCloudinary(avatarFile);
-          avatarUrl = uploadRes.secure_url || uploadRes.url;
-          // gọi API updateProfile
-          await axios.put(
-            `${Constants.DOMAIN_API}/api/profile`,
-            { avatar: avatarUrl },
-            { headers: { Authorization: `Bearer ${res.data.token}` } }
-          );
-        }
-        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-        navigate("/login");
+
+      // 2. Lấy token từ response
+      const token = res.data.token;
+
+      // 3. Nếu có avatarFile, upload lên Cloudinary
+      if (avatarFile && token) {
+        const uploadRes = await uploadToCloudinary(avatarFile);
+        const avatarUrl = uploadRes.secure_url || uploadRes.url;
+
+        // 4. Gọi API updateProfile để lưu avatar
+        await axios.put(
+          `${Constants.DOMAIN_API}/api/profile`,
+          { avatar: avatarUrl },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
       }
+
+      // 5. Thành công → thông báo và chuyển sang login
+      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+      navigate("/login");
     } catch (err) {
+      // Bắt lỗi trả về từ server
       const msg = err.response?.data?.message;
       if (/email/i.test(msg)) {
         setError("email", { type: "manual", message: msg });
@@ -79,6 +85,7 @@ export default function Register() {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="container mt-5">
