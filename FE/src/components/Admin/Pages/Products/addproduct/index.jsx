@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Constanst from "../../../../../Constanst";
@@ -25,14 +24,23 @@ useEffect(() => {
   const fetchCategories = async () => {
     try {
       const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
-      setCategories(res.data);
+      const data = res.data?.data;
+
+      if (Array.isArray(data)) {
+        setCategories(data); // ✅ chỉ set khi là mảng
+      } else {
+        console.warn("API không trả về mảng danh mục:", data);
+        setCategories([]); // fallback
+      }
     } catch (err) {
       console.error("Lỗi khi tải danh mục:", err);
-      toast.error("Lỗi khi tải danh mục!"); // ✅ toast
+      toast.error("Lỗi khi tải danh mục!");
+      setCategories([]); // fallback nếu API lỗi
     }
   };
   fetchCategories();
 }, []);
+
 
 const handleImageUpload = async (e) => {
   const file = e.target.files[0];

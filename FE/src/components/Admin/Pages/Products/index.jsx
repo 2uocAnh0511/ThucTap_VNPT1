@@ -82,13 +82,13 @@ const fetchProducts = async () => {
       <td>{product.title}</td>
       <td>{product.price?.toLocaleString("vi-VN") || "N/A"} VND</td>
       <td>{product.category?.name || "N/A"}</td>
-      {/* <td title={product.short_description}>
+      <td title={product.short_description}>
         {product.short_description
           ? product.short_description.length > 20
             ? `${product.short_description.slice(0, 20)}...`
             : product.short_description
           : "Không có mô tả"}
-      </td> */}
+      </td>
       <td>
         <Link
           to={`/admin/products/EditProduct?id=${product.id}`}
@@ -123,7 +123,7 @@ const fetchProducts = async () => {
                   <th scope="col">Tên Sản Phẩm</th>
                   <th scope="col">Giá</th>
                   <th scope="col">Danh Mục</th>
-                  {/* <th scope="col">Mô Tả</th> */}
+                  <th scope="col">Mô Tả</th>
                   <th scope="col">Thao Tác</th>
                 </tr>
               </thead>

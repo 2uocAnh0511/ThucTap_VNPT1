@@ -13,8 +13,9 @@ exports.products = async (req, res) => {
         {
           model: categoryModel,
           as: "category",
-          attributes: ["name"],
+          attributes: ["id","name"],
           where: { status: 0 }, // Lọc category có status = 0
+           required: false, // ✅ Cho phép sản phẩm không có category
         },
       ],
     });

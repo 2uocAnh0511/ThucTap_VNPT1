@@ -14,6 +14,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const getCookie = (name) => {
     const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
@@ -110,10 +111,11 @@ const ProductDetail = () => {
   return (
     <div className="container my-5">
       <div className="row g-5">
+        {/* Hình ảnh sản phẩm */}
         <div className="col-md-6">
           <div className="card shadow-sm">
             <img src={product.image} className="card-img-top rounded-top" alt={product.title}
-              style={{ height: '350px', objectFit: 'cover' }} />
+              style={{ height: '550px', objectFit: 'cover' }} />
             <div className="d-flex justify-content-center flex-wrap p-3">
               {product.thumbnails.map((thumb, index) => (
                 <img key={index} src={thumb} className="img-thumbnail m-1"
@@ -123,26 +125,30 @@ const ProductDetail = () => {
           </div>
         </div>
 
+        {/* Thông tin sản phẩm */}
         <div className="col-md-6">
-          <div className="p-3 border rounded shadow-sm bg-white h-100 d-flex flex-column justify-content-between">
+          <div className="p-3 bg-white h-100 d-flex flex-column justify-content-between ">
             <div>
-              <h2 className="mb-2">{product.title}</h2>
-              <p className="">Danh mục: <strong>{product.category_id?.name}</strong></p>
-              <h4 className="text-danger mb-3">
+              <h2 className="mb-2 mt-11">{product.title}</h2>
+              <p>Danh mục: <strong>{product.category?.name || "Chưa phân loại"}</strong></p>
+              <h4 className="text-danger mb-3 mt-11">
                 {product.price?.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
               </h4>
-              <p className="text-secondary">{product.short_description}</p>
-              <p><strong>Tồn kho:</strong> {product.stock ?? 0}</p>
+              <p className="text-secondary mt-11">
+                {showFullDescription || !product.short_description || product.short_description.length <= 200
+                  ? product.short_description
+                  : `${product.short_description.slice(0, 200)}...`}
+                {product.short_description && product.short_description.length > 200 && (
+                  <button
+                    className="ms-2 text-primary text-decoration-underline mb-14"
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                  >
+                    {showFullDescription ? "Thu gọn" : "Xem thêm"}
+                  </button>
+                )}
+              </p>
             </div>
-
             <div className="mt-4">
-              <div className="d-flex align-items-center mb-3">
-                <span className="me-2">Số lượng:</span>
-                <button className="btn btn-outline-secondary btn-sm" onClick={handleDecrease}>-</button>
-                <span className="mx-3">{quantity}</span>
-                <button className="btn btn-outline-secondary btn-sm" onClick={handleIncrease}>+</button>
-              </div>
-
               <button
                 className="btn btn-primary w-100"
                 disabled={product.stock === 0}
@@ -160,7 +166,7 @@ const ProductDetail = () => {
         <textarea className="form-control mb-2" rows={3}
           value={newComment} onChange={(e) => setNewComment(e.target.value)}
           placeholder="Nhập đánh giá của bạn..." />
-        <button className="btn btn-success" onClick={handleAddComment}>Gửi đánh giá</button>
+        <button className="btn btn-primary" onClick={handleAddComment}>Gửi đánh giá</button>
         <ul className="mt-4 list-group">
           {comments.length === 0 ? (
             <li className="list-group-item text-muted">Chưa có đánh giá.</li>

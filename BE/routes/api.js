@@ -16,6 +16,7 @@ const homeController = require('../controllers/api/homeController')
 const promotionController = require("../controllers/api/promotionController");
 const PromotionUserController = require("../controllers/api/promotionUserController");
 const EmailController = require("../controllers/api/nodemailerController");
+const contactController = require("../controllers/api/contactController");
 
 // ---------- CATEGORY ----------
 router.get("/categories", CategoryControllers.getAll);
@@ -100,5 +101,5 @@ router.post('/promotions/apply', promotionController.applyDiscount);
 router.get('/active', promotionController.getActivePromotions);
 
 
-
+router.post('/contact', contactController.sendContactEmail);
 module.exports = router;

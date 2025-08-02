@@ -8,7 +8,6 @@ import { uploadToCloudinary } from "../../../../../Upload/uploadToCloudinary";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify"; // ✅ Thêm toast
 
-
 const EditProduct = () => {
   const { id } = useParams(); // Lấy id từ URL
   const navigate = useNavigate();
@@ -37,6 +36,8 @@ const EditProduct = () => {
     };
     fetchCategories();
   }, []);
+
+  
   useEffect(() => {
     fetchProduct();
   }, [id, reset]);
@@ -63,11 +64,13 @@ const EditProduct = () => {
       } else {
         throw new Error(`Lỗi từ server: ${res.status}`);
       }
- } catch (err) {
-  console.error("Lỗi khi lấy sản phẩm:", err.response ? err.response.data : err);
-  toast.error("Không thể tải sản phẩm!"); // ✅ toast
-}
- finally {
+    } catch (err) {
+      console.error(
+        "Lỗi khi lấy sản phẩm:",
+        err.response ? err.response.data : err
+      );
+      toast.error("Không thể tải sản phẩm!"); // ✅ toast
+    } finally {
       setLoading(false);
     }
   };
@@ -79,21 +82,19 @@ const EditProduct = () => {
         const url = await uploadToCloudinary(file);
         setImageUrl(url);
         console.log("Ảnh đã upload:", url);
-    } catch (err) {
-  console.error("Lỗi upload ảnh:", err);
-  toast.error("Upload ảnh thất bại!"); // ✅ toast
-}
-
+      } catch (err) {
+        console.error("Lỗi upload ảnh:", err);
+        toast.error("Upload ảnh thất bại!"); // ✅ toast
+      }
     }
   };
 
   const onSubmit = async (data) => {
     try {
-     if (!imageUrl) {
-  toast.warning("Vui lòng chọn và upload ảnh trước khi submit."); // ✅ toast
-  return;
-}
-
+      if (!imageUrl) {
+        toast.warning("Vui lòng chọn và upload ảnh trước khi submit."); // ✅ toast
+        return;
+      }
 
       const updatedProductData = {
         name: data.name,
@@ -108,20 +109,18 @@ const EditProduct = () => {
         updatedProductData
       );
 
-     if (res.status === 200 || res.status === 201) {
-  toast.success("Cập nhật sản phẩm thành công!"); // ✅ toast
-  setTimeout(() => {
-    navigate("/admin/products"); // ⏳ Chờ toast hiển thị xong rồi chuyển trang
-  }, 1000);
-} else {
-  toast.error("Cập nhật sản phẩm thất bại!"); // ✅ toast
-}
-
-   } catch (err) {
-  console.error("Lỗi khi cập nhật sản phẩm:", err);
-  toast.error("Đã xảy ra lỗi!"); // ✅ toast
-}
-
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Cập nhật sản phẩm thành công!"); // ✅ toast
+        setTimeout(() => {
+          navigate("/admin/products"); // ⏳ Chờ toast hiển thị xong rồi chuyển trang
+        }, 1000);
+      } else {
+        toast.error("Cập nhật sản phẩm thất bại!"); // ✅ toast
+      }
+    } catch (err) {
+      console.error("Lỗi khi cập nhật sản phẩm:", err);
+      toast.error("Đã xảy ra lỗi!"); // ✅ toast
+    }
   };
 
   if (!currentProduct) {
