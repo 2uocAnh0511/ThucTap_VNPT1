@@ -4,24 +4,36 @@ const Cart = require('../../models/cart');
 
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.findAll({
+        const { page = 1, limit = 10, search = "" } = req.query;
+        const offset = (page - 1) * limit;
+
+        const whereUser = search
+            ? { name: { [Op.like]: `%${search}%` } }
+            : {};
+
+        const { rows, count } = await Order.findAndCountAll({
             include: [
                 {
                     model: User,
                     attributes: ['name'],
+                    where: whereUser
                 }
-            ]
+            ],
+            order: [["createdAt", "DESC"]],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
         });
 
         res.status(200).json({
             status: 200,
             message: "Lấy danh sách đơn hàng thành công",
-            data: orders
+            data: rows,
+            total: count
         });
     } catch (error) {
         res.status(500).json({
             message: "Lỗi khi lấy danh sách đơn hàng",
-            error
+            error,
         });
     }
 };

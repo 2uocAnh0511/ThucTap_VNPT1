@@ -6,10 +6,36 @@ const { Op } = require('sequelize');
 
 
 
-exports.getAll = async (req, res, next) => {
-    const data = await categoryModel.findAll()
-    res.json(data);
+exports.getAll = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = "" } = req.query;
+        const offset = (page - 1) * limit;
+
+        const whereCondition = search
+            ? {
+                name: {
+                    [Op.like]: `%${search}%`,
+                },
+            }
+            : {};
+
+        const { rows, count } = await categoryModel.findAndCountAll({
+            where: whereCondition,
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [["id", "DESC"]],
+        });
+
+        res.json({
+            data: rows,
+            total: count,
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách danh mục:", error);
+        res.status(500).json({ message: "Lỗi máy chủ" });
+    }
 };
+
 exports.detail = async (req, res, next) => {
     const category = await categoryModel.findByPk(req.params.id)
     res.json(category);

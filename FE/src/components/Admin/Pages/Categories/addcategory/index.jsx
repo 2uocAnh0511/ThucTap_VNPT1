@@ -5,11 +5,11 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 import Constanst from "../../../../../Constanst";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const AddCategory = () => {
     const navigate = useNavigate();
     const [serverError, setServerError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
 
     const {
         register,
@@ -20,7 +20,6 @@ const AddCategory = () => {
 
     const handleAdd = async (props) => {
         setServerError("");
-        setSuccessMessage("");
 
         try {
             const data = {
@@ -28,24 +27,21 @@ const AddCategory = () => {
                 status: props.status,
             };
 
-            const res = await axios.post(`${Constanst.DOMAIN_API}/api/categories`, data, {
+            await axios.post(`${Constanst.DOMAIN_API}/api/categories`, data, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
                 }
             });
 
-            // Hiển thị thông báo thành công
-            setSuccessMessage("Thêm danh mục thành công!");
+            toast.success("Thêm danh mục thành công!");
 
-            // Reset form
             reset();
 
-            // (Tùy chọn) Chuyển trang sau vài giây
             setTimeout(() => {
                 navigate("/admin/Categories");
             }, 1500);
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.error) {
+            if (error.response?.data?.error) {
                 setServerError(error.response.data.error);
             } else {
                 setServerError("Đã xảy ra lỗi khi thêm danh mục!");
@@ -60,7 +56,6 @@ const AddCategory = () => {
                     <h4 className="mb-4">Thêm Danh Mục Sản Phẩm</h4>
 
                     {serverError && <Alert variant="danger">{serverError}</Alert>}
-                    {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
                     <Form onSubmit={handleSubmit(handleAdd)}>
                         <Form.Group className="mb-3" controlId="name">
@@ -70,10 +65,6 @@ const AddCategory = () => {
                                 placeholder="Nhập tên danh mục"
                                 {...register("name", {
                                     required: "Tên danh mục không được để trống!",
-                                    minLength: {
-                                        value: 6,
-                                        message: "Tên danh mục phải ít nhất 6 ký tự!",
-                                    },
                                 })}
                             />
                             {errors.name && (
@@ -101,7 +92,7 @@ const AddCategory = () => {
                             <Button variant="primary" type="submit">
                                 Lưu
                             </Button>
-                            <Link className="btn btn-danger btn-sm me-3" to="/admin/Categories">
+                            <Link className="btn btn-danger btn-sm" to="/admin/Categories">
                                 Hủy
                             </Link>
                         </div>

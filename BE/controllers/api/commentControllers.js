@@ -1,111 +1,100 @@
-const { Product, User,comments  } = require("../../models");
+const { Op } = require("sequelize"); // ✅
+const { Product, User, comments } = require("../../models");
 
-// exports.getAll = async (req, res, next) => {
-//     try {
-//       const data = await comments.findAll({
-//         include: [
-//           {
-//             model: User,
-//             as: "user",
-//             attributes: ["id", "name"],
-//           },
-//           {
-//             model: Product,
-//             as: "product",  // lấy từ alias trong model
-//             attributes: ["id", "title"],
-//           }
-//         ]
-//       });
-  
-//       res.json(data);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ message: "Lỗi khi lấy dữ liệu bình luận" });
-//     }
-//   };
+exports.getAll = async (req, res) => {
+  const { page = 1, limit = 10, search = "" } = req.query;
+  const offset = (page - 1) * limit;
 
-exports.detail = async (req, res, next) => {
-    // findByPk là phương thức lấy ra 1 dữ liệu
-    const comment = await comments.findByPk(req.params.id)
-    res.json(comment);
+  try {
+    const { count, rows } = await comments.findAndCountAll({
+      where: search
+        ? {
+          [Op.or]: [
+            { content: { [Op.like]: `%${search}%` } },
+          ],
+        }
+        : {},
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Product,
+          as: "product",
+          attributes: ["id", "title"],
+        },
+      ],
+      limit: Number(limit),
+      offset,
+      order: [["id", "DESC"]],
+    });
+
+    res.json({ data: rows, total: count });
+  } catch (err) {
+    console.error("🔥 Lỗi chi tiết:", err);
+    res.status(500).json({ message: "Lỗi khi lấy danh sách bình luận", error: err.message });
+  }
 };
 
-exports.create = async(req, res, next) => {
-    console.log(req.body);
-    const data = req.body;
-    const comment = await comments.create(data);
-    res.json(comment);
+exports.toggleVisibility = async (req, res) => {
+  const { id } = req.params;
 
-}
-exports.update =async(req, res, next) => {
-    const file = req.file;
-    const data = req.body;
-    console.log(req.body);
-    if(file){
-        data.images = file.filename;
+  try {
+    const comment = await comments.findByPk(id);
+    if (!comment) {
+      return res.status(404).json({ message: "Không tìm thấy bình luận" });
     }
-    const comment = await comments.update(
-        data,
-        {
-            where: {
-                id: req.params.id
-            }
-        }
-    );
-    res.json(comment);
-}
-exports.delete =async(req, res, next) => {
-    const comment = await comments.destroy({
-        where: {
-            id: req.params.id
-        }
+
+    const newStatus = comment.status === 1 ? 0 : 1;
+    await comment.update({ status: newStatus });
+
+    res.json({ message: "Cập nhật trạng thái thành công", status: newStatus });
+  } catch (error) {
+    console.error("🔥 Lỗi khi cập nhật trạng thái bình luận:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
+exports.getByProductId = async (req, res) => {
+  try {
+    const data = await comments.findAll({
+      where: { product_id: req.params.id, status: 1 },
+      include: [
+        { model: User, as: "user", attributes: ["id", "name"] },
+      ],
+      order: [["createdAt", "DESC"]],
     });
-    res.json(comment);
-}
-exports.toggleStatus = async (req, res, next) => {
-    try {
-      const comment = await comments.findByPk(req.params.id);
-  
-      if (!comment) {
-        return res.status(404).json({ message: "Không tìm thấy bình luận" });
-      }
-  
-      const newStatus = comment.status === 1 ? 0 : 1;
-  
-      await comment.update({ status: newStatus });
-  
-      res.json({ message: "Cập nhật trạng thái thành công", status: newStatus });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Lỗi khi cập nhật trạng thái bình luận" });
-    }
-  };
-  
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi khi lấy bình luận", error: err.message });
+  }
+};
 
-  exports.getByProduct = async (req, res, next) => {
-    const { productId } = req.params;
-  
-    try {
-      const data = await comments.findAll({
-        where: { productId },
-        include: [
-          {
-            model: User,
-            as: "user",
-            attributes: ["id", "name"],
-          },
-          {
-            model: Product,
-            as: "product",
-            attributes: ["id", "title"],
-          }
-        ]
-      });
-  
-      res.json(data);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Lỗi khi lấy bình luận theo sản phẩm" });
-    }
-  };
-  
+exports.update = async (req, res) => {
+  try {
+    const comment = await comments.findByPk(req.params.id);
+    if (!comment) return res.status(404).json({ message: "Không tìm thấy bình luận" });
+
+    await comment.update({ content: req.body.content });
+    res.json({ message: "Cập nhật thành công" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
+
+exports.create = async (req, res) => {
+  const { content, user_id, product_id } = req.body;
+  try {
+    const newComment = await comments.create({
+      content,
+      user_id,
+      product_id,
+      status: 1, // mặc định hiển thị
+    });
+    res.json(newComment);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi khi tạo bình luận", error: err.message });
+  }
+};

@@ -14,9 +14,10 @@ exports.products = async (req, res) => {
           model: categoryModel,
           as: "category",
           attributes: ["name"],
-          where: { status: 0 }, // Lọc category có status = 0
+          where: { status: 0 },
         },
       ],
+       order: [['createdAt', 'DESC'], ['id', 'DESC']] // 👉 Sắp xếp sản phẩm mới nhất lên đầu
     });
     res.json({ data });
   } catch (error) {
