@@ -1,0 +1,113 @@
+/* Home.css */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px !important;
+  overflow: hidden;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-image-wrapper {
+  overflow: hidden;
+  border-radius: 15px 15px 0 0;
+}
+
+.card-image-wrapper img {
+  transition: transform 0.3s ease;
+}
+
+.card-image-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+.btn-custom {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-primary {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-custom {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem !important;
+  }
+
+  .card-text {
+    font-size: 1rem !important;
+  }
+}
+
+/* Đảm bảo button có cùng kích thước và không xuống hàng */
+.card-footer .btn-custom {
+  min-width: 110px; /* Đặt chiều rộng cố định để đồng bộ */
+  max-width: 110px; /* Đảm bảo không vượt quá */
+  font-size: 0.8rem; /* Kích thước chữ đồng nhất */
+  padding: 0.4rem 0.6rem; /* Điều chỉnh padding để cân đối */
+  line-height: 1.2; /* Đảm bảo chữ không xuống hàng */
+  white-space: nowrap; /* Ngăn chữ xuống hàng */
+}
+
+/* Hover effect cho button */
+.card-footer .btn-outline-dark:hover {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.card-footer .btn-dark:hover {
+  background-color: #333;
+  border-color: #333;
+}
+
+/* Bỏ gạch chân cho link "Xem ngay" */
+.no-underline {
+  text-decoration: none !important;
+}
+
+/* Đảm bảo layout của card */
+.card-hover:hover {
+  transform: translateY(-5px);
+  transition: transform 0.3s ease;
+}
+
+/* Đảm bảo các nút nằm ngang và căn giữa */
+.card-footer .d-flex {
+  flex-wrap: nowrap; /* Ngăn nút xuống hàng */
+  gap: 8px; /* Khoảng cách giữa các nút */
+  align-items: center; /* Căn giữa theo chiều dọc */
+}

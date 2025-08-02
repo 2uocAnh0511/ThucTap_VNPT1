@@ -12,6 +12,7 @@ const cartControllers = require("../controllers/api/cartControllers");
 const authController = require("../controllers/api/authController");
 const statisticsController = require("../controllers/api/statistics.Controllers");
 const userStatisticsControllers = require("../controllers/api/userStatistics.Controllers");
+const homeController = require('../controllers/api/homeController')
 
 // ---------- CATEGORY ----------
 router.get("/categories", CategoryControllers.getAll);
@@ -72,5 +73,7 @@ router.patch("/comments/:id/toggle", commentControllers.toggleVisibility);
 
 // ---------- STATISTICS ----------
 router.get("/statistics", statisticsController.getProductStatistics);
+
+router.get('/home', homeController.getHome);
 
 module.exports = router;

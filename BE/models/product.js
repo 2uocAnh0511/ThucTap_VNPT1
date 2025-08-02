@@ -38,7 +38,7 @@ const Product = database.define('products', {
     }
   }
 }, {
-  timestamps: true,
+  timestamps: false,
   underscored: true
 });
 Product.belongsTo(Category, {

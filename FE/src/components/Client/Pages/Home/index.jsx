@@ -1,157 +1,140 @@
-import React from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
-import { FaGem, FaGlasses, FaWallet, FaStar } from "react-icons/fa";
+import React, { useEffect, useState, useRef } from "react";
+import { Container, Row, Col, Card, Button, Image } from "react-bootstrap";
+import axios from "axios";
+import Constants from "../../../../Constanst";
+import { FaGem, FaStar, FaWallet, FaGlasses } from "react-icons/fa";
 import { GiWatch, GiDiamondRing, GiLeatherBoot, GiGears } from "react-icons/gi";
+import { Link, useNavigate } from 'react-router-dom';
+import './Home.css'; // File CSS tùy chỉnh
 
-import Button from 'react-bootstrap/Button';
+export default function Home() {
+  const [cats, setCats] = useState([]);
+  const [cols, setCols] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const isInitialMount = useRef(true); // Sử dụng useRef để theo dõi lần mount đầu tiên
 
+  useEffect(() => {
+    let mounted = true;
+    if (!isInitialMount.current) return; // Chỉ chạy lần đầu tiên
 
+    setLoading(true); // Bắt đầu loading
+    axios
+      .get(`${Constants.DOMAIN_API}/api/home`)
+      .then((res) => {
+        if (mounted) {
+          console.log("API Response Data:", res.data); // Log dữ liệu chi tiết
+          setCats(res.data.categories || []);
+          setCols(res.data.collections || []);
+          setFeatured(res.data.featuredProducts || []);
+        }
+      })
+      .catch((error) => {
+        console.error("API Error:", error.message || error);
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false); // Kết thúc loading
+          isInitialMount.current = false; // Đánh dấu đã mount xong
+        }
+      });
 
-import Image from 'react-bootstrap/Image';
+    return () => {
+      mounted = false; // Cleanup khi unmount
+    };
+  }, []); // Dependency array rỗng để chạy một lần
 
-const categories = [
-  { icon: <GiWatch size={40} className="text-secondary" />, label: "Đồng hồ thời trang xà cừ" },
-  { icon: <FaStar size={40} className="text-secondary" />, label: "Phiên bản giới hạn" },
-  { icon: <GiLeatherBoot size={40} className="text-secondary" />, label: "Mặt số siêu mỏng" },
-  { icon: <GiGears size={40} className="text-secondary" />, label: "Đồng hồ Skeleton siêu" },
-  { icon: <FaGem size={40} className="text-secondary" />, label: "Đồng hồ cao cấp vàng 18k" },
-  { icon: <GiDiamondRing size={40} className="text-secondary" />, label: "Đá quý – Vật liệu hiếm" },
-  { icon: <FaWallet size={40} className="text-secondary" />, label: "Ví da thật" },
-  { icon: <FaGlasses size={40} className="text-secondary" />, label: "Kính Hải Triều" },
-];
+  if (loading) return <div>Loading...</div>; // Hiển thị loading trong khi fetch
 
-const collections = [
-  {
-    title: "BỘ SƯU TẬP MỚI",
-    image: "/pr1.jpg",
-    description: "ĐỒNG HỒ ĐÍNH ĐÁ TẦM GIÁ 5 TRIỆU ĐÁNG MUA NHẤT",
-    size: "large",
-  },
-  {
-    title: "NAM",
-    image: "/anhnam1.jpg",
-    description: "Xem ngay",
-    size: "small",
-  },
-  {
-    title: "NỮ",
-    image: "/anhnu1.jpg",
-    description: "Xem ngay",
-    size: "small",
-  },
-  {
-    title: "ĐỒNG HỒ ĐÔI",
-    image: "/prdoi.jpg",
-    description: "Xem ngay",
-    size: "small",
-  },
-];
-
-const products = [
-  { id: 1, name: "Casio World Time", price: "1.506.000 đ", img: "/dongho.png" },
-  { id: 2, name: "Orient SK", price: "8.000.000 đ", img: "/dongho.png" },
-  { id: 3, name: "Tissot Le Locle", price: "17.500.000 đ", img: "/dongho.png" },
-  { id: 4, name: "Doxa Noble", price: "49.240.000 đ", img: "/dongho.png" },
-  
-
-];
-  
-const WatchCategoryGrid = () => {
   return (
-    <Container className="my-5">
-      <Row className="g-4 justify-content-center">
-        {categories.map((item, index) => (
-          <Col key={index} xs={6} md={4} lg={3}>
-            <Card className="text-center shadow-sm p-3 border-0 rounded-4 bg-light">
-              <Card.Body>
-                <div className="mb-2">{item.icon}</div>
-                <Card.Text className="fw-medium">{item.label}</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    </Container>
-  );
-};
+    <>
+      {/* Featured Products */}
+      <Container className="my-5">
+        <section className="bg-light p-5 rounded-5 shadow-lg">
+          <h2 className="text-center mb-5 fw-bold" style={{ fontFamily: 'Poppins, sans-serif', color: '#333' }}>
+            SẢN PHẨM NỔI BẬT
+          </h2>
+          <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+            {featured.map((p, index) => (
+              <Col key={p.id || index} className="mb-4">
+                <Card className="h-100 shadow-sm border-0 card-hover">
+                  <div className="card-image-wrapper">
+                    <Image
+                      src={p.image}
+                      fluid
+                      className="rounded-top"
+                      style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+                    />
+                  </div>
+                  <Card.Body className="d-flex flex-column justify-content-between p-4">
+                    <div>
+                      <Card.Title className="fw-bold fs-5 text-dark mb-2">
+                        {p.title}
+                      </Card.Title>
+                      <Card.Text className="text-danger fw-bold fs-5">
+                        {p.price.toLocaleString('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        })}
+                      </Card.Text>
+                    </div>
+                  </Card.Body>
+                  <Card.Footer className="bg-transparent border-0 py-3">
+                    <div className="d-flex justify-content-center gap-2">
+                      <Button
+                        variant="outline-dark"
+                        size="sm"
+                        className="btn-custom"
+                        as={Link}
+                        to={`/product/${p.id}`}
+                      >
+                        Xem Chi Tiết
+                      </Button>
+                      <Button
+                        variant="dark"
+                        size="sm"
+                        className="btn-custom"
+                      >
+                        Mua Ngay
+                      </Button>
+                    </div>
+                  </Card.Footer>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </section>
+      </Container>
 
-const WatchCollection = () => {
-  return (
-    <div className="grid grid-cols-2 gap-4 p-6">
-      {/* Ảnh lớn bên trái */}
-      <div className="col-span-1">
-        <div className="relative rounded-xl overflow-hidden shadow-lg cursor-pointer">
-          <img
-            src={collections[0].image}
-            alt={collections[0].title}
-            className="w-full h-[500px] object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-            <h2 className="text-xl font-bold">{collections[0].title}</h2>
-            <span className="text-sm opacity-75">Xem ngay</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3 ảnh nhỏ bên phải */}
-      <div className="grid grid-cols-2 grid-rows-2 gap-4 col-span-1">
-        {collections.slice(1, 3).map((item, index) => (
-          <div
-            key={index}
-            className="relative rounded-xl overflow-hidden shadow-lg cursor-pointer"
-          >
-            <img
-              src={item.image}
-              alt={item.title}
-              className="w-full h-[240px] object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-4 text-white">
-              <h2 className="text-lg font-bold">{item.title}</h2>
-              <span className="text-sm opacity-75">Xem ngay</span>
+      {/* Collections */}
+      <div className="grid grid-cols-2 gap-4 p-6">
+        {cols[0] && (
+          <div className="relative rounded-xl overflow-hidden shadow-lg">
+            <Image src={cols[0].image} fluid className="w-full h-[500px] object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-6 text-white">
+              <h2 className="text-xl font-bold">{cols[0].title}</h2>
+              <Link className="text-sm opacity-75 no-underline" to="/Product">Xem ngay</Link>
             </div>
           </div>
-        ))}
-        {/* Ảnh lớn ở dưới */}
-        <div className="relative col-span-2 rounded-xl overflow-hidden shadow-lg cursor-pointer">
-          <img
-            src={collections[3].image}
-            alt={collections[3].title}
-            className="w-full h-[260px] object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-6 text-white">
-            <h2 className="text-xl font-bold">{collections[3].title}</h2>
-            <span className="text-sm opacity-75">Xem ngay</span>
-          </div>
+        )}
+        <div className="grid grid-cols-2 grid-rows-2 gap-4">
+          {cols.slice(1).map((co, index) => (
+            <div key={co.id || index} className="relative rounded-xl overflow-hidden shadow-lg">
+              <Image
+                src={co.image}
+                fluid
+                className={index < 2 ? "w-full h-[240px] object-cover" : "w-full h-[260px] object-cover"}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-column justify-end p-4 text-white">
+                <h2 className="text-lg font-bold">{co.title}</h2>
+                <Link className="text-sm opacity-75 no-underline" to="/Product">Xem ngay</Link>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    </>
   );
-};
+}
 
-const HomeProduct =()=>{
-  return (
-    <Container className="mt-5">
-      <section className="bg-light p-5 rounded-5 shadow-lg">
-    <h2 className="text-center mb-4">ĐỒNG HỒ NAM BÁN CHẠY</h2>
-    <Row>
-      {products.map((product) => (
-        <Col key={product.id} md={3} className="mb-4">
-          <Card className="h-100 text-center shadow-sm border-0">
-            <Image src={product.img} fluid className="p-3" />
-            <Card.Body>
-              <Card.Title className="fw-bold">{product.name}</Card.Title>
-              <Card.Text className="text-danger fw-bold">{product.price}</Card.Text>
-              <Button variant="primary" className="me-2">Xem Chi Tiết</Button>
-              <Button variant="success">Mua Ngay</Button>
-            </Card.Body>
-          </Card>
-        </Col>
-      ))}
-    </Row>
-    </section>
-  </Container>
-  );
-};
-
-
-export { WatchCategoryGrid, WatchCollection, HomeProduct};
+export { Home as WatchCategoryGrid, Home as WatchCollection, Home as HomeProduct };

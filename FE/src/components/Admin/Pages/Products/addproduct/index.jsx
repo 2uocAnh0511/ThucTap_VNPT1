@@ -20,8 +20,34 @@ const AddProduct = () => {
     reset,
   } = useForm();
 
-useEffect(() => {
-  const fetchCategories = async () => {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
+        setCategories(res.data.data || []);
+      } catch (err) {
+        console.error("Lỗi khi tải danh mục:", err);
+        alert("Lỗi khi tải danh mục!");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const url = await uploadToCloudinary(file);
+        setImageUrl(url);
+        console.log("Ảnh đã upload:", url);
+      } catch (err) {
+        console.error("Lỗi upload ảnh:", err);
+        alert("Upload ảnh thất bại!");
+      }
+    }
+  };
+
+  const onSubmit = async (data) => {
     try {
       const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
       setCategories(res.data);
