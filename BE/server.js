@@ -1,41 +1,25 @@
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const session = require("express-session");
-const clientRoutes = require('./routes/clientRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const apiRoutes = require('./routes/apiRoutes');
+const cors = require("cors");
 const app = express();
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
-app.use(cors());
-
-require('./models/connectModel');
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use('/public', express.static('public'));
-
-
-
 const port = 5000;
 
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+const bodyParser = require('body-parser');
+ 
+app.use(bodyParser.json());// nhận dư liêu form json
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors({
     origin: "*",
     methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-    allowedHeaders: "Content-Type, Authorization",
-    credentials: true
+    allowedHeaders: "Content-Type, Authorization"
 }));
 
 
-// Routes
-app.use(clientRoutes);
-app.use('/admin', adminRoutes);
-app.use(apiRoutes);
+const apiRoute = require("./routes/api");
+app.use('/api', apiRoute);
+
+
 
 app.listen(port, () => {
-    console.log(`Server chạy tại http://localhost:${port}`);
-});
+    console.log('http://localhost:5000');
+})
