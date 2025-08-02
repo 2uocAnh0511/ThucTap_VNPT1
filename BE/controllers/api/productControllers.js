@@ -1,24 +1,34 @@
 const productModel = require("../../models/product");
 const categoryModel = require("../../models/category");
 const commentModel = require("../../models/comment");
-const { Op } = require('sequelize');
+const { Op } = require("sequelize"); // ❗️BẮT BUỘC phải có dòng này nếu dùng Op.like
+
+
 exports.home = (req, res, next) => {
   res.render("Admin/Home");
 };
 
 exports.products = async (req, res) => {
   try {
+    const { searchTerm = "" } = req.query;
+
     const data = await productModel.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${searchTerm}%`, // Tìm theo tên sản phẩm
+        },
+      },
       include: [
         {
           model: categoryModel,
           as: "category",
-          attributes: ["id","name"],
-          where: { status: 0 }, // Lọc category có status = 0
-           required: false, // ✅ Cho phép sản phẩm không có category
+          attributes: ["id", "name"],
+          
+          required: false,
         },
       ],
     });
+
     res.json({ data });
   } catch (error) {
     console.error("Lỗi API:", error);

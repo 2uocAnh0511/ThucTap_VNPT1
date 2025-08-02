@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const HeaderAdmin = () => {
   return (
     <div className="sidebar bg-dark text-white vh-100 p-3">
-      <h3 className="text-center mb-4">NGŨ HỔ</h3>
+      <h3 className="text-center mb-4">QKA</h3>
       <Nav className="flex-column">
         <Nav.Link as={Link} to="/admin" className="text-white">
           <FaHome className="me-2" /> Trang chủ

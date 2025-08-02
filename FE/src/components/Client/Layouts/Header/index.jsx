@@ -1,16 +1,18 @@
-import { FaShoppingBag, FaUser, FaCog } from 'react-icons/fa'; // Thêm icon cài đặt (cog) cho trang admin
-import Carousel from 'react-bootstrap/Carousel';
-import ExampleCarouselImage from '../../../ExampleCarouselImage';
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { useCookies } from 'react-cookie';
+import { FaShoppingBag, FaUser, FaCog } from "react-icons/fa"; // Thêm icon cài đặt (cog) cho trang admin
+import Carousel from "react-bootstrap/Carousel";
+import ExampleCarouselImage from "../../../ExampleCarouselImage";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useCookies } from "react-cookie";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"
+import "react-toastify/dist/ReactToastify.css";
 
 function Header() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [isLoginDropdownOpen, setIsLoginDropdownOpen] = useState(false);
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
-  const [cookies, setCookie, removeCookie] = useCookies(['token', 'user']);
+  const [cookies, setCookie, removeCookie] = useCookies(["token", "user"]);
   const token = cookies.token;
   let user = cookies.user;
   const navigate = useNavigate();
@@ -31,19 +33,26 @@ function Header() {
 
       <div className="bg-white shadow-md">
         <div className="container mx-auto flex items-center justify-between py-4 px-6">
-
           {/* Logo */}
           <Link className="flex items-center" to={"/"}>
-            <img src="/image.png" alt="Logo" className="h-16" />
+            <img src="/qka.png" alt="Logo" className="h-16" />
           </Link>
 
           {/* Menu */}
           <nav className="flex space-x-6 font-semibold uppercase text-sm text-black">
-            <Link className="text-black" to={"/"}>Trang Chủ</Link>
-            <Link className="text-black" to={"/Product"}>Sản Phẩm</Link>
-            <Link className="text-black" to={"/CoupleProducts"}>Cặp Đôi</Link>
-            <Link className="text-black" to={"/Contact"}>Liên Hệ</Link>
-            <Link className="text-black" to={"/NewsPage"}>Tin Tức</Link>
+            <Link className="text-black" to={"/"}>
+              Trang Chủ
+            </Link>
+            <Link className="text-black" to={"/Product"}>
+              Sản Phẩm
+            </Link>
+          
+            <Link className="text-black" to={"/Contact"}>
+              Liên Hệ
+            </Link>
+            <Link className="text-black" to={"/NewsPage"}>
+              Tin Tức
+            </Link>
           </nav>
 
           {/* Tìm kiếm + Giỏ hàng + Tài khoản */}
@@ -51,10 +60,29 @@ function Header() {
             <div className="relative">
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    navigate(
+                      `/search?keyword=${encodeURIComponent(searchTerm)}`
+                    );
+                  }
+                }}
                 placeholder="Tìm sản phẩm..."
                 className="border rounded-full py-2 pl-4 pr-10 text-sm w-64 focus:ring focus:ring-gray-300"
               />
-              <span className="absolute right-3 top-2.5 text-gray-500 cursor-pointer">🔍</span>
+             <span
+  className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
+  onClick={() =>
+    navigate(`/search?keyword=${encodeURIComponent(searchTerm)}`)
+  }
+>
+  🔍
+</span>
+
+
+            
             </div>
 
             {/* Giỏ hàng */}
@@ -69,8 +97,15 @@ function Header() {
               {isCartDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md z-50">
                   {/* Nội dung giỏ hàng */}
-                  <p className="block px-4 py-2 text-gray-700">Giỏ hàng trống</p>
-                  <Link to="/cart" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Xem giỏ hàng</Link>
+                  <p className="block px-4 py-2 text-gray-700">
+                    Giỏ hàng trống
+                  </p>
+                  <Link
+                    to="/cart"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Xem giỏ hàng
+                  </Link>
                 </div>
               )}
             </div>
@@ -82,15 +117,20 @@ function Header() {
                 onClick={() => setIsLoginDropdownOpen(!isLoginDropdownOpen)}
               >
                 <FaUser size={20} className="mr-2" />
-                {token && user?.username && <span>{`Xin chào, ${user.username}`}</span>}
-                {!token && <span className=''>Tài khoản</span>}
+                {token && user?.username && (
+                  <span>{`Xin chào, ${user.username}`}</span>
+                )}
+                {!token && <span className="">Tài khoản</span>}
               </a>
               {isLoginDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md z-50">
                   {token ? (
                     <>
                       {user?.role === 1 && (
-                        <Link to="/admin" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center">
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center"
+                        >
                           <FaCog className="mr-2" /> Trang quản trị
                         </Link>
                       )}
@@ -110,21 +150,34 @@ function Header() {
                         <span>Xem đơn hàng</span>
                       </Link>
 
-                      <button className="block px-4 py-2 text-left w-full text-gray-70  0 hover:bg-gray-100" onClick={() => {
-                        removeCookie('token', { path: '/' });
-                        removeCookie('user', { path: '/' }); // Xóa cả thông tin user
-                        toast.success("Đăng xuất thành công!");
-                        setTimeout(() => {
-                          window.location.reload(); // Reload sau khi toast hiển thị
-                        }, 1500); // Delay 1.5s để toast hiển thị xong
-                      }}>
+                      <button
+                        className="block px-4 py-2 text-left w-full text-gray-70  0 hover:bg-gray-100"
+                        onClick={() => {
+                          removeCookie("token", { path: "/" });
+                          removeCookie("user", { path: "/" }); // Xóa cả thông tin user
+                          toast.success("Đăng xuất thành công!");
+                          setTimeout(() => {
+                            window.location.reload(); // Reload sau khi toast hiển thị
+                          }, 1500); // Delay 1.5s để toast hiển thị xong
+                        }}
+                      >
                         Đăng xuất
                       </button>
                     </>
                   ) : (
                     <>
-                      <Link to="/login" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Đăng nhập</Link>
-                      <Link to="/register" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Đăng ký</Link>
+                      <Link
+                        to="/login"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Đăng nhập
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >
+                        Đăng ký
+                      </Link>
                     </>
                   )}
                 </div>
@@ -158,7 +211,4 @@ function Banner() {
   );
 }
 
-export {
-  Header,
-  Banner,
-};
+export { Header, Banner };

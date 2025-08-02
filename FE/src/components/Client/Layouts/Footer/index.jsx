@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="flex justify-center md:justify-start">
             <div className="border-2 border-white border-dashed px-6 py-2 rotate-[-5deg] inline-block">
               <h2 className="text-white font-bold text-2xl">1900.6777</h2>
-              <img src="/image.png" alt="Logo" height="80" />
+              <img src="/qka.png" alt="Logo" height="100" />
             </div>
           </div>
 
@@ -41,7 +41,7 @@ const Footer = () => {
 
         {/* Dòng cuối */}
         <div className="mt-6 text-center text-xs opacity-80">
-          Copyright by Ngũ Hổ Watches | Hotline: 1900 6777
+          Copyright by QKA Watches | Hotline: 1900 6777
         </div>
       </div>
     </footer>

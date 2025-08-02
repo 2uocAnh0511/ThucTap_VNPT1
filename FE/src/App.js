@@ -27,6 +27,7 @@ import Login from './components/Client/Pages/auth/Login';
 import Register from './components/Client/Pages/auth/Register';
 import Profile from './components/Client/Pages/auth/Profile';
 import Product from './components/Client/Pages/Product';
+import SearchPage from "./components/Client/Pages/SearchPage";
 
 // Admin pages
 import HomeAdmin from './components/Admin/Pages/Home';
@@ -73,6 +74,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="Product" element={<Product />} />
+          <Route path="/search" element={<SearchPage />} />
           {/* Các trang cho user đã đăng nhập (role 0 và 1) */}
           <Route
             path="contact"
