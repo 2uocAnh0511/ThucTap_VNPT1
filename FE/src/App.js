@@ -13,6 +13,8 @@ import MainAdmin from './components/Admin/Layouts/MainAdmin';
 // Client pages
 import HomeMain from './components/Client/Pages/Home/HomeMain';
 import NewsPage from './components/Client/Pages/News';
+import BlogDetail from './components/Client/Pages/News/detail';
+
 import MenProducts from './components/Client/Pages/Men';
 import WomenProducts from './components/Client/Pages/Women';
 import CoupleProducts from './components/Client/Pages/Couple';
@@ -61,6 +63,7 @@ function App() {
         <Route path="/" element={<MainUser />}>
           <Route index element={<HomeMain />} />
           <Route path="NewsPage" element={<NewsPage />} />
+          <Route path="blog/:id" element={<BlogDetail />} />
           <Route path="MenProducts" element={<MenProducts />} />
           <Route path="WomenProducts" element={<WomenProducts />} />
           <Route path="CoupleProducts" element={<CoupleProducts />} />

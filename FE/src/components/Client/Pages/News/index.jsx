@@ -1,33 +1,100 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import Constants from "../../../../Constanst";
 
 const NewsPage = () => {
-    const newsList = [
-        { id: 1, title: "Xu hướng đồng hồ 2025", image: "/images/banner.jpg", description: "Khám phá những mẫu đồng hồ hot nhất trong năm 2025.", date: "30/03/2025" },
-        { id: 2, title: "Cách chọn đồng hồ phù hợp", image: "/images/news2.webp", description: "Hướng dẫn chọn đồng hồ theo phong cách và cá tính.", date: "28/03/2025" },
-        { id: 3, title: "Bảo quản đồng hồ đúng cách", image: "/images/news3.webp", description: "Những mẹo đơn giản để giữ đồng hồ bền đẹp.", date: "25/03/2025" },
-        { id: 4, title: "Phụ kiện thời trang đi kèm đồng hồ", image: "/images/news4.webp", description: "Kết hợp đồng hồ với trang phục và phụ kiện chuẩn phong cách.", date: "22/03/2025" }
-    ];
+  const [blogs, setBlogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 6;
+
+  const fetchBlogs = async (page) => {
+    try {
+      const res = await axios.get(`${Constants.DOMAIN_API}/api/blogs`, {
+        params: { page, limit, status: 1 }
+      });
+      setBlogs(res.data.data);
+      setTotalPages(Math.ceil(res.data.total / limit));
+    } catch (err) {
+      console.error("Lỗi lấy blog:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchBlogs(currentPage);
+  }, [currentPage]);
+
+  const renderPagination = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          className={`btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setCurrentPage(i)}
+        >
+          {i}
+        </button>
+      );
+    }
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center mb-4">Tin tức & Xu hướng</h2>
-            <div className="row">
-                {newsList.map((news) => (
-                    <div key={news.id} className="col-md-6 mb-4">
-                        <div className="card">
-                            <img src={news.image} className="card-img-top" alt={news.title} style={{ height: '250px', objectFit: 'cover' }} />
-                            <div className="card-body">
-                                <h5>{news.title}</h5>
-                                <p className="text-muted">{news.date}</p>
-                                <p>{news.description}</p>
-                                <button className="btn btn-primary btn-sm">Xem chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+      <div className="text-center mt-4">
+        <button
+          className="btn btn-outline-secondary btn-sm mx-1"
+          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+        >
+          &laquo;
+        </button>
+        {pages}
+        <button
+          className="btn btn-outline-secondary btn-sm mx-1"
+          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+        >
+          &raquo;
+        </button>
+      </div>
     );
+  };
+
+  return (
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">Tin tức & Xu hướng</h2>
+      <div className="row">
+        {blogs.map((news) => (
+          <div key={news.id} className="col-md-6 col-lg-4 mb-4">
+            <div className="card h-100">
+              <img
+                src={news.image || "/images/placeholder.jpg"}
+                className="card-img-top"
+                alt={news.title}
+                style={{ height: "250px", objectFit: "cover", width: "100%" }}
+              />
+              <div className="card-body d-flex flex-column justify-content-between" style={{ height: "250px" }}>
+                <div>
+                  <h5 className="text-truncate" title={news.title}>{news.title}</h5>
+                  <p className="text-muted">
+                    {news.created_at ? new Date(news.created_at).toLocaleDateString("vi-VN") : "Chưa rõ ngày"}
+                  </p>
+                  <p className="text-truncate" title={news.content}>
+                    {news.content?.replace(/<[^>]+>/g, "").substring(0, 100)}...
+                  </p>
+                </div>
+                <Link to={`/blog/${news.id}`} className="btn btn-primary btn-sm mt-2">
+                  Xem chi tiết
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {renderPagination()}
+    </div>
+  );
 };
 
 export default NewsPage;
