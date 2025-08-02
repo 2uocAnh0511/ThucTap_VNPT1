@@ -69,6 +69,8 @@ router.delete("/carts/:id", cartControllers.deleteCartItem);
 // auth
 router.post("/register", authController.register);
 router.post("/login", authController.login);
+router.put("/profile", authController.updateProfile);
+
 
 
 // Orders

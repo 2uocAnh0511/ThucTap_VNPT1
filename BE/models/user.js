@@ -31,11 +31,16 @@ const User = database.define(
       type: Sequelize.STRING,
       allowNull: false,
     },
-    role:{
+    role: {
       type: Sequelize.TINYINT,
       allowNull: false,
       defaultValue: 0,
-    }
+    },
+    avatar: {
+      type: Sequelize.STRING,
+      allowNull: true,
+      defaultValue: null
+    },
   },
   {
     timestamps: false,
