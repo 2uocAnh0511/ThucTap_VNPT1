@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Constanst from "../../../../../Constanst";
+import Constants from "../../../../../Constanst";
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -16,7 +16,7 @@ const OrderDetail = () => {
 
   const getOrderInfo = async () => {
     try {
-      const res = await axios.get(`${Constanst.DOMAIN_API}/api/orders/${id}`);
+      const res = await axios.get(`${Constants.DOMAIN_API}/api/orders/${id}`);
       setOrderInfo(res.data);
       setOrders(res.data.order_details || []);
     } catch (e) {
@@ -37,94 +37,107 @@ const OrderDetail = () => {
 
   return (
     <div className="container mt-4">
-      <div className="card">
+      <div className="card shadow mb-4">
+        <div className="card-header bg-primary text-white">
+          <h4 className="mb-0">Thông tin khách hàng</h4>
+        </div>
         <div className="card-body">
-          <h3 className="card-title fw-bold">Thông tin khách hàng</h3>
-          <form>
-            <div className="mb-3">
-              <label className="form-label fw-bold">ID Đơn hàng:</label>
-              <input type="text" className="form-control" value={orderInfo.id || ""} readOnly />
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label fw-bold">Mã đơn hàng:</label>
+              <div className="form-control">{orderInfo.id || "—"}</div>
             </div>
-            <div className="mb-3">
-              <label className="form-label fw-bold">Người dùng:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={orderInfo.user?.name || "N/A"}
-                readOnly
-              />
+            <div className="col-md-6">
+              <label className="form-label fw-bold">Tên người dùng:</label>
+              <div className="form-control">{orderInfo.user?.name || "—"}</div>
             </div>
-            <div className="mb-3">
+            <div className="col-md-6">
               <label className="form-label fw-bold">Trạng thái:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={orderInfo.status || "N/A"}
-                readOnly
-              />
+              <div className="form-control">{orderInfo.status || "—"}</div>
             </div>
-            <div className="mb-3">
+            <div className="col-md-6">
               <label className="form-label fw-bold">Ngày tạo:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={
-                  orderInfo.createdAt
-                    ? new Date(orderInfo.createdAt).toLocaleString("vi-VN")
-                    : ""
-                }
-                readOnly
-              />
+              <div className="form-control">
+                {orderInfo.createdAt
+                  ? new Date(orderInfo.createdAt).toLocaleString("vi-VN")
+                  : "—"}
+              </div>
             </div>
-          </form>
+            <div className="col-md-12">
+              <label className="form-label fw-bold">Phương thức thanh toán:</label>
+              <div className="form-control">{orderInfo.payment_method || "—"}</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="card mt-3">
-        <div className="card-body">
-          <h5 className="card-title">Chi tiết đơn hàng</h5>
+      <div className="card shadow">
+        <div className="card-header bg-secondary text-white">
+          <h5 className="mb-0">Chi tiết đơn hàng</h5>
+        </div>
+        <div className="card-body p-0">
           {orders.length === 0 ? (
-            <p>Không có sản phẩm trong đơn hàng.</p>
+            <p className="p-3 text-muted">Không có sản phẩm trong đơn hàng.</p>
           ) : (
-            <table className="table table-bordered table-hover text-center">
-              <thead className="table-dark">
-                <tr>
-                  <th>Trạng thái</th>
-                  <th>Sản phẩm</th>
-                  <th>Số lượng</th>
-                  <th className="text-end">Giá</th>
-                  <th className="text-end">Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((item, index) => (
-                  <tr key={index}>
-                    <td className="align-middle">{orderInfo.status}</td>
-                    <td className="align-middle">{item.product?.title || "N/A"}</td>
-                    <td className="align-middle">{item.qty}</td>
-                    <td className="text-end align-middle">{formatCurrency(item.price)}</td>
-                    <td className="text-end align-middle">{formatCurrency(item.price * item.qty)}</td>
+            <div className="table-responsive">
+              <table className="table table-striped table-bordered mb-0 text-center align-middle">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Trạng thái</th>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th className="text-end">Đơn giá</th>
+                    <th className="text-end">Thành tiền</th>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th colSpan="4" className="text-end">
-                    Tổng cộng:
-                  </th>
-                  <th className="text-end">{formatCurrency(orderInfo.total_price)}</th>
-                </tr>
-              </tfoot>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map((item, index) => (
+                    <tr key={index}>
+                      <td>{orderInfo.status}</td>
+                      <td>{item.product?.title || "—"}</td>
+                      <td>{item.qty}</td>
+                      <td className="text-end">{formatCurrency(item.price)}</td>
+                      <td className="text-end">{formatCurrency(item.price * item.qty)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="table-light">
+                    <td colSpan="4" className="text-end fw-semibold">Tạm tính:</td>
+                    <td className="text-end">{formatCurrency(orderInfo.total_price)}</td>
+                  </tr>
+                  {Number(orderInfo.discount_amount) > 0 && (
+                    <tr className="table-warning">
+                      <td colSpan="4" className="text-end fw-semibold">Giảm giá:</td>
+                      <td className="text-end text-danger">
+                        -{formatCurrency(orderInfo.discount_amount)}
+                      </td>
+                    </tr>
+                  )}
+                  <tr className="table-success">
+                    <td colSpan="4" className="text-end fw-bold">Thành tiền:</td>
+                    <td className="text-end fw-bold text-success">
+                      {formatCurrency(orderInfo.final_price || orderInfo.total_price)}
+                    </td>
+                  </tr>
+                  {orderInfo.promotion?.code && (
+                    <tr className="table-info">
+                      <td colSpan="4" className="text-end fw-semibold">Mã khuyến mãi:</td>
+                      <td className="text-start text-primary">{orderInfo.promotion.code}</td>
+                    </tr>
+                  )}
+                </tfoot>
+              </table>
+            </div>
           )}
-          <div className="d-flex justify-content-between">
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={() => navigate("/admin/order")}
-            >
-              <i className="bi bi-arrow-left"></i> Quay lại
-            </button>
-          </div>
+        </div>
+        <div className="card-footer text-end">
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => navigate("/admin/order")}
+          >
+            <i className="bi bi-arrow-left"></i> Quay lại
+          </button>
         </div>
       </div>
     </div>

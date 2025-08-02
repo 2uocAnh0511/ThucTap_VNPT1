@@ -13,6 +13,9 @@ const authController = require("../controllers/api/authController");
 const statisticsController = require("../controllers/api/statistics.Controllers");
 const userStatisticsControllers = require("../controllers/api/userStatistics.Controllers");
 const homeController = require('../controllers/api/homeController')
+const promotionController = require("../controllers/api/promotionController");
+const PromotionUserController = require("../controllers/api/promotionUserController");
+const EmailController = require("../controllers/api/nodemailerController");
 
 // ---------- CATEGORY ----------
 router.get("/categories", CategoryControllers.getAll);
@@ -75,5 +78,24 @@ router.patch("/comments/:id/toggle", commentControllers.toggleVisibility);
 router.get("/statistics", statisticsController.getProductStatistics);
 
 router.get('/home', homeController.getHome);
+router.get('/promotions/list', promotionController.getAll);
+router.get('/promotions/generate-code', promotionController.generateUniquePromoCode);
+router.post("/promotions/create", promotionController.create);
+router.get('/promotions/getusers', promotionController.getHighValueBuyers);
+// router.get('/promotions/applied', promotionController.getAppliedPromotions);
+// router.get('/promotions/applied/:id', promotionController.getOrdersByPromotion);
+router.get("/promotions/:id", promotionController.getById);
+router.put('/promotions/:id', promotionController.update);
+router.delete("/promotion/:id", promotionController.delete);
+
+router.get('/promotionusers/list', PromotionUserController.get);
+router.post('/promotionusers/check-emails', PromotionUserController.checkPromotionExpiry);
+router.post('/send-promotion-emails', EmailController.sendPromotionEmails);
+router.get('/users/not-in-promotion', PromotionUserController.getUsersNotInPromotion);
+router.post('/promotionusers/add', PromotionUserController.addUsersToPromotion);
+
+router.post('/promotions/apply', promotionController.applyDiscount);
+router.get('/active', promotionController.getActivePromotions);
+
 
 module.exports = router;

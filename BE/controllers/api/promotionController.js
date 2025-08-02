@@ -1,0 +1,622 @@
+const { fn, col, literal } = require('sequelize');
+const { Op } = require('sequelize');
+const PromotionModel = require('../../models/promotionsModel');
+const UserModel = require('../../models/user');
+const OrderModel = require('../../models/order');
+
+class PromotionController {
+  static async getAll(req, res) {
+    const {
+      searchTerm = '',
+      page = 1,
+      limit = 10,
+      code,
+      status,
+      startDate,
+      endDate,
+      discount_type,
+      quantity,
+      special_promotion,
+    } = req.query;
+
+    const currentPage = parseInt(page, 10);
+    const perPage = parseInt(limit, 10);
+    const offset = (currentPage - 1) * perPage;
+
+    try {
+
+      const baseWhereClause = {};
+
+      if (searchTerm) {
+        baseWhereClause.name = {
+          [Op.and]: [
+            { [Op.not]: null },
+            { [Op.like]: `%${searchTerm}%` },
+          ],
+        };
+      }
+
+      if (code) {
+        baseWhereClause.code = {
+          [Op.like]: `%${code}%`,
+        };
+      }
+
+      if (startDate) {
+        baseWhereClause.start_date = {
+          ...(baseWhereClause.start_date || {}),
+          [Op.gte]: new Date(startDate),
+        };
+      }
+
+      if (endDate) {
+        baseWhereClause.end_date = {
+          ...(baseWhereClause.end_date || {}),
+          [Op.lte]: new Date(endDate),
+        };
+      }
+
+      if (discount_type) {
+        baseWhereClause.discount_type = discount_type;
+      }
+
+      if (quantity !== undefined) {
+        baseWhereClause.quantity = {
+          [Op.gte]: parseInt(quantity, 10),
+        };
+      }
+
+      const allPromotions = await PromotionModel.findAll({
+        where: baseWhereClause,
+        order: [['created_at', 'DESC']],
+      });
+
+      const now = new Date();
+      const statusCounts = {
+        all: 0,
+        active: 0,
+        expired: 0,
+        upcoming: 0,
+        exhausted: 0,
+        inactive: 0,
+        special: 0,
+      };
+
+      for (const promo of allPromotions) {
+        let newStatus = promo.status;
+
+        if (promo.status === 'inactive') {
+          newStatus = 'inactive';
+        } else if (promo.quantity === 0) {
+          newStatus = 'exhausted';
+        } else if (now < promo.start_date) {
+          newStatus = 'upcoming';
+        } else if (now >= promo.start_date && now <= promo.end_date) {
+          newStatus = 'active';
+        } else {
+          newStatus = 'expired';
+        }
+
+        const updateData = {};
+        if (promo.status !== newStatus) {
+          updateData.status = newStatus;
+        }
+
+        if (newStatus === 'exhausted' && promo.quantity !== 0) {
+          updateData.quantity = 0;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await promo.update(updateData);
+          Object.assign(promo, updateData);
+        }
+
+        statusCounts[newStatus] = (statusCounts[newStatus] || 0) + 1;
+
+        if (
+          promo.special_promotion &&
+          promo.status === 'active' &&
+          promo.quantity > 0 &&
+          new Date(promo.start_date) <= now &&
+          new Date(promo.end_date) >= now
+        ) {
+          statusCounts.special = (statusCounts.special || 0) + 1;
+        }
+
+      }
+
+      statusCounts.all = allPromotions.length;
+
+      let filteredPromotions = allPromotions;
+      if (special_promotion !== undefined) {
+        const isSpecial = special_promotion === 'true';
+        filteredPromotions = filteredPromotions.filter(promo => promo.special_promotion === isSpecial);
+      }
+
+      if (status) {
+        const statusArray = typeof status === 'string' ? status.split(',') : [status];
+        filteredPromotions = filteredPromotions.filter(promo =>
+          statusArray.includes(promo.status)
+        );
+      }
+
+      const totalFilteredItems = filteredPromotions.length;
+      const paginatedPromotions = filteredPromotions.slice(offset, offset + perPage);
+
+      res.status(200).json({
+        success: true,
+        data: paginatedPromotions,
+        pagination: {
+          totalItems: totalFilteredItems,
+          currentPage,
+          totalPages: Math.ceil(totalFilteredItems / perPage),
+        },
+        statusCounts,
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách khuyến mãi:", error.message, error.stack);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ.",
+      });
+    }
+  }
+
+  static async create(req, res) {
+    try {
+      const {
+        name,
+        description,
+        discount_type,
+        discount_value,
+        quantity,
+        start_date,
+        end_date,
+        status,
+        applicable_to = 'all_products',
+        min_price_threshold = 0,
+        max_price = null,
+        user_ids = [],
+      } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ success: false, message: 'Tên khuyến mãi không được để trống.' });
+      }
+      if (!applicable_to) {
+        return res.status(400).json({ success: false, message: 'Trường applicable_to không được để trống.' });
+      }
+      if (discount_type === 'vnd' && Number(discount_value) >= Number(min_price_threshold)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Giá trị giảm (VNĐ) phải nhỏ hơn mức áp dụng đơn hàng từ.',
+        });
+      }
+      const exists = await PromotionModel.findOne({ where: { name } });
+      if (exists) {
+        return res.status(409).json({ success: false, message: 'Tên khuyến mãi đã tồn tại.' });
+      }
+      if (new Date(start_date) > new Date(end_date)) {
+        return res.status(400).json({ success: false, message: 'Ngày bắt đầu phải trước ngày kết thúc.' });
+      }
+
+      const now = new Date();
+      const start = new Date(start_date);
+      const end = new Date(end_date);
+      end.setHours(23, 59, 59, 999);
+
+      let promoStatus;
+      if (status === 'inactive') {
+        promoStatus = 'inactive';
+      } else {
+        promoStatus = now < start ? 'upcoming' : (now <= end ? 'active' : 'expired');
+      }
+
+      const code = await PromotionController.generateUniquePromoCode();
+      const isSpecial = Array.isArray(user_ids) && user_ids.length > 0;
+      const actualQuantity = isSpecial ? user_ids.length : Number(quantity);
+
+      const promotion = await PromotionModel.create({
+        name,
+        description,
+        discount_type,
+        discount_value: Number(discount_value),
+        quantity: actualQuantity,
+        start_date: start,
+        end_date: end,
+        status: promoStatus,
+        applicable_to,
+        min_price_threshold: Number(min_price_threshold),
+        max_price: max_price !== null ? Number(max_price) : null,
+        code,
+        special_promotion: isSpecial,
+      });
+
+      if (Array.isArray(user_ids) && user_ids.length > 0) {
+        await promotion.setUsers(user_ids);
+      }
+
+      if (isSpecial) {
+        await promotion.setUsers(user_ids);
+      }
+
+      res.status(201).json({ success: true, data: promotion });
+    } catch (error) {
+      console.error('Lỗi khi tạo khuyến mãi:', error);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ' });
+    }
+  }
+
+  static async generateUniquePromoCode(length = 8) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code;
+
+    let isUnique = false;
+    while (!isUnique) {
+      code = Array.from({ length }, () => characters[Math.floor(Math.random() * characters.length)]).join('');
+      const existing = await PromotionModel.findOne({ where: { code } });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return code;
+  }
+
+
+  static async getHighValueBuyers(req, res) {
+    try {
+      const now = new Date();
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+      const users = await UserModel.findAll({
+        include: [{
+          model: OrderModel,
+          as: 'orders',
+          where: {
+            status: 'delivered',
+            created_at: {
+              [Op.between]: [startOfLastMonth, endOfLastMonth]
+            }
+          },
+          required: false,
+          attributes: ['total_price', 'created_at']
+        }],
+        attributes: ['id', 'name']
+      });
+
+      const enrichedUsers = users.map(user => {
+        const orders = (user.orders || []).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        const totalOrders = orders.length;
+
+        const totalSpentInMonth = orders.reduce(
+          (sum, order) => sum + parseFloat(order.total_price || 0),
+          0
+        );
+
+        const ordersInfo = orders.map(order => ({
+          created_at: new Date(order.created_at).toLocaleDateString('vi-VN'),
+          total_price: parseFloat(order.total_price)
+        }));
+
+        const isHighValue = totalOrders > 8 && totalSpentInMonth > 5000000;
+
+        return {
+          id: user.id,
+          name: user.name,
+          total_orders: totalOrders,
+          total_spent_in_month: totalSpentInMonth,
+          is_high_value: isHighValue,
+          orders_info: ordersInfo
+        };
+      });
+
+      const sortedUsers = enrichedUsers.sort((a, b) => {
+        if (a.is_high_value === b.is_high_value) {
+          return b.total_orders - a.total_orders;
+        }
+        return b.is_high_value - a.is_high_value;
+      });
+
+      res.json({ success: true, data: sortedUsers });
+    } catch (err) {
+      console.error('Lỗi khi lấy danh sách người dùng:', err);
+      res.status(500).json({ success: false, message: 'Lỗi máy chủ' });
+    }
+  }
+
+  static async getById(req, res) {
+    const { id } = req.params;
+    try {
+      const promotion = await PromotionModel.findByPk(id);
+      if (!promotion) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khuyến mãi.",
+        });
+      }
+      res.status(200).json({ success: true, data: promotion });
+    } catch (error) {
+      console.error("Lỗi khi lấy khuyến mãi theo ID:", error);
+      res.status(500).json({ success: false, message: "Lỗi máy chủ." });
+    }
+  }
+
+  static async update(req, res) {
+    const { id } = req.params;
+
+    try {
+      const {
+        name,
+        description,
+        discount_type,
+        discount_value,
+        quantity,
+        start_date,
+        end_date,
+        status,
+        applicable_to,
+        min_price_threshold,
+        max_price = null,
+      } = req.body;
+
+      const promotion = await PromotionModel.findByPk(id);
+      if (!promotion) {
+        return res.status(404).json({ success: false, message: 'Không tìm thấy khuyến mãi.' });
+      }
+      const currentStatus = promotion.status;
+      if (currentStatus === 'expired') {
+        return res.status(403).json({ success: false, message: 'Khuyến mãi đã hết hạn, không thể sửa.' });
+      }
+      if (currentStatus === 'active') {
+        const forbiddenFields = ['id', 'created_at', 'updated_at'];
+        const keysToUpdate = Object.keys(req.body);
+        const disallowedFields = keysToUpdate.filter(k => forbiddenFields.includes(k));
+        if (disallowedFields.length > 0) {
+          return res.status(403).json({ success: false, message: `Không được phép sửa trường: ${disallowedFields.join(', ')}` });
+        }
+      }
+      if (start_date && end_date && new Date(start_date) > new Date(end_date)) {
+        return res.status(400).json({ success: false, message: 'Ngày bắt đầu phải trước ngày kết thúc.' });
+      }
+      const now = new Date();
+      const start = new Date(start_date);
+      const end = new Date(end_date);
+      end.setHours(23, 59, 59, 999);
+      let promoStatus = (status === 'inactive')
+        ? 'inactive'
+        : (now < start ? 'upcoming' : (now <= end ? 'active' : 'expired'));
+      await promotion.update({
+        name,
+        description,
+        discount_type,
+        discount_value: discount_value !== undefined ? Number(discount_value) : promotion.discount_value,
+        quantity: quantity !== undefined ? Number(quantity) : promotion.quantity,
+        start_date: start_date ? start : promotion.start_date,
+        end_date: end_date ? end : promotion.end_date,
+        status: promoStatus,
+        applicable_to,
+        min_price_threshold: min_price_threshold !== undefined ? Number(min_price_threshold) : promotion.min_price_threshold,
+        max_price: max_price !== undefined ? Number(max_price) : promotion.max_price
+      });
+      res.status(200).json({ success: true, data: promotion });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật khuyến mãi:", error);
+      res.status(500).json({ success: false, message: "Lỗi máy chủ khi cập nhật khuyến mãi." });
+    }
+  }
+
+
+
+  static async delete(req, res) {
+    const { id } = req.params;
+    try {
+      const promotion = await PromotionModel.findByPk(id);
+      if (!promotion) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy khuyến mãi để xóa.",
+        });
+      }
+      if (promotion.status !== "upcoming") {
+        return res.status(400).json({
+          success: false,
+          message: "Chỉ có thể xóa khuyến mãi khi trạng thái là 'Sắp diễn ra'.",
+        });
+      }
+      if (promotion.used_count > 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Không thể xóa vì khuyến mãi đã được áp dụng cho đơn hàng.",
+        });
+      }
+      await promotion.destroy();
+      return res.status(200).json({
+        success: true,
+        message: "Xóa khuyến mãi thành công.",
+      });
+    } catch (error) {
+      console.error("Lỗi khi xóa khuyến mãi:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ khi xóa khuyến mãi.",
+      });
+    }
+  }
+
+static async getActivePromotions(req, res) {
+  try {
+    const { orderTotal } = req.query;
+    const now = new Date();
+    const total = parseFloat(orderTotal);
+
+    if (isNaN(total) || total <= 0) {
+      return res.status(400).json({ success: false, message: 'Tổng đơn hàng không hợp lệ' });
+    }
+
+    const promotions = await PromotionModel.findAll({
+      where: {
+        status: 'active',
+        special_promotion: false,
+        start_date: { [Op.lte]: now },
+        end_date: { [Op.gte]: now },
+        quantity: { [Op.gt]: 0 },
+        min_price_threshold: { [Op.lte]: total },
+        applicable_to: 'order',
+      },
+      attributes: [
+        'id', 'code', 'name', 'discount_type', 'discount_value',
+        'max_price', 'min_price_threshold', 'end_date', 'quantity'
+      ]
+    });
+
+    return res.json({
+      success: true,
+      data: promotions, // có thể rỗng []
+    });
+  } catch (error) {
+    console.error('[getActivePromotions] Lỗi:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ khi lấy mã giảm giá'
+    });
+  }
+}
+
+
+
+
+  static async applyDiscount(req, res) {
+    try {
+      let { code, orderTotal } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Bạn cần đăng nhập để sử dụng mã giảm giá' });
+      }
+
+      if (!code || typeof code !== 'string' || code.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Mã giảm giá là bắt buộc' });
+      }
+
+      code = code.trim().toUpperCase();
+      orderTotal = parseFloat(orderTotal);
+
+      if (isNaN(orderTotal)) {
+        return res.status(400).json({ success: false, message: 'Tổng đơn hàng không hợp lệ' });
+      }
+
+      const result = await sequelize.transaction(async (t) => {
+        const promotion = await PromotionModel.findOne({
+          where: { code },
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (!promotion) {
+          throw { status: 404, message: 'Mã giảm giá không tồn tại' };
+        }
+
+        const now = new Date();
+
+        if (promotion.status !== 'active') {
+          throw { status: 400, message: `Khuyến mãi đang ở trạng thái ${promotion.status}` };
+        }
+
+        if (now < promotion.start_date || now > promotion.end_date) {
+          throw { status: 400, message: 'Khuyến mãi đã hết hạn hoặc chưa bắt đầu' };
+        }
+
+        if (promotion.quantity <= 0) {
+          throw { status: 400, message: 'Khuyến mãi đã hết lượt sử dụng' };
+        }
+
+        if (orderTotal < promotion.min_price_threshold) {
+          throw {
+            status: 400,
+            message: `Đơn hàng phải tối thiểu $${promotion.min_price_threshold}`,
+          };
+        }
+
+        if (!promotion.special_promotion) {
+          throw {
+            status: 403,
+            message: 'Mã giảm giá không hợp lệ hoặc không được phép sử dụng',
+          };
+        }
+
+        const promoUser = await PromotionUserModel.findOne({
+          where: {
+            promotion_id: promotion.id,
+            user_id: userId,
+            email_sent: true,
+            used: { [Op.not]: true },
+          },
+          transaction: t,
+          lock: t.LOCK.UPDATE,
+        });
+        if (!promoUser) {
+          throw {
+            status: 403,
+            message: 'Bạn không được cấp mã này hoặc đã sử dụng rồi',
+          };
+        }
+
+        const discountValue = Number(promotion.discount_value);
+        const maxPrice = promotion.max_price !== null ? Number(promotion.max_price) : null;
+
+        let discountAmount = 0;
+
+        if (promotion.discount_type === 'percentage' && !isNaN(discountValue)) {
+          discountAmount = (orderTotal * discountValue) / 100;
+        } else if (promotion.discount_type === 'fixed' && !isNaN(discountValue)) {
+          discountAmount = discountValue;
+        }
+
+        if (!isNaN(maxPrice) && discountAmount > maxPrice) {
+          discountAmount = maxPrice;
+        }
+
+        if (discountAmount > orderTotal) {
+          discountAmount = orderTotal;
+        }
+
+        discountAmount = !isNaN(discountAmount) ? discountAmount : 0;
+
+        return {
+          discountType: promotion.discount_type,
+          discountValue,
+          discountAmount: Number(discountAmount.toFixed(2)),
+          totalAfterDiscount: Number((orderTotal - discountAmount).toFixed(2)),
+          applicableTo: promotion.applicable_to || null,
+          code,
+          promotion_id: promotion.id,
+          promotion_user_id: promoUser?.id || promotion_user_id || null,
+
+        };
+      });
+
+      return res.json({
+        success: true,
+        message: `Mã giảm giá ${result.code} áp dụng thành công`,
+        data: result,
+      });
+
+    } catch (error) {
+      console.error('[applyDiscount] Lỗi:', error);
+
+      const status = error?.status || 500;
+      const message = error?.message || 'Lỗi máy chủ khi áp dụng mã giảm giá';
+
+      return res.status(status).json({
+        success: false,
+        message,
+      });
+    }
+  }
+
+
+}
+
+module.exports = PromotionController;

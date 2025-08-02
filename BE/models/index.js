@@ -6,9 +6,36 @@ const Order = require("./order");
 const OrderDetail = require("./orderDetail");
 const comments = require("./comment");
 const Cart = require("./cart");
+const promotionsModel = require("./promotionsModel");
+const promotionUsersModel = require("./promotionUsersModel");
+const PromotionUserModel = require("./promotionUsersModel");
 
+Order.belongsTo(promotionsModel, { foreignKey: "promotion_id", as: "promotion" });
+promotionsModel.hasMany(Order, { foreignKey: "promotion_id", as: "orders" });
 
+User.hasMany(promotionUsersModel, { foreignKey: 'user_id', as: 'promotionUsers' });
+promotionUsersModel.belongsTo(User, { foreignKey: 'user_id' });
 
+User.hasMany(Order, { foreignKey: 'user_id', as: 'orders' });
+Order.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// PromotionUser belongsTo Promotion
+promotionUsersModel.belongsTo(promotionsModel, { foreignKey: 'promotion_id', as: 'Promotion' });
+promotionsModel.hasMany(promotionUsersModel, { foreignKey: 'promotion_id', as: 'promotionUsers' });
+
+User.belongsToMany(promotionsModel, {
+  through: promotionUsersModel,
+  foreignKey: "user_id",
+  otherKey: "promotion_id",
+  as: "promotions",
+});
+
+promotionsModel.belongsToMany(User, {
+  through: PromotionUserModel,
+  foreignKey: "promotion_id",
+  otherKey: "user_id",
+  as: "users",
+});
 // Khai báo quan hệ
 Order.belongsTo(User, { foreignKey: "user_id" });
 Order.hasMany(OrderDetail, { foreignKey: "order_id" });
@@ -35,4 +62,6 @@ module.exports = {
   Product,
   Order,
   OrderDetail,
+  promotionsModel,
+  promotionUsersModel,
 };

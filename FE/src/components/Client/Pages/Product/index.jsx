@@ -45,7 +45,7 @@ function Product() {
       console.log("Error", error);
     }
   };
-  
+
 
   const filteredProducts = products.filter((prod) => {
     const matchCategory = categoryFilter === 'all' || prod.category_id === categoryFilter;

@@ -12,6 +12,7 @@ exports.getAllOrders = async (req, res) => {
             : {};
 
         const { rows, count } = await Order.findAndCountAll({
+            attributes: ['id', 'status', 'final_price', 'createdAt'],
             include: [
                 {
                     model: User,
@@ -42,6 +43,7 @@ exports.getOrderById = async (req, res) => {
 
     try {
         const order = await Order.findByPk(req.params.id, {
+            attributes: ['id', 'status', 'final_price', 'createdAt'],
             include: [
                 {
                     model: OrderDetail,
@@ -74,42 +76,76 @@ exports.getOrderById = async (req, res) => {
 
 
 exports.createOrder = async (req, res) => {
-    const { user_id } = req.body;
+    const {
+        user_id,
+        full_name,
+        address,
+        phone,
+        email,
+        payment_method,
+        discount_amount = 0,
+        final_price,
+        promotion_id = null,
+        items = []
+    } = req.body;
 
     try {
-        const order = await Order.create({ user_id, status: "Chờ xác nhận" });
-
-        const cartItems = await Cart.findAll({
-            where: { user_id },
-            include: [{ model: Product, as: 'product' }]
+        const order = await Order.create({
+            user_id,
+            full_name,
+            address,
+            phone,
+            email,
+            payment_method,
+            status: "Chờ xác nhận",
+            total_price: 0,
+            discount_amount: Number(discount_amount) || 0,
+            final_price: 0,
+            promotion_id
         });
 
-        const orderDetailsData = cartItems.map(item => ({
+        const orderDetailsData = items.map(item => ({
             order_id: order.id,
             product_id: item.product_id,
-            qty: item.qty,
-            price: item.product.price
+            qty: item.quantity,
+            price: Number(item.product_price) || 0
         }));
+
+        if (orderDetailsData.some(item => item.price === 0)) {
+            const productIds = items.map(i => i.product_id);
+            const products = await Product.findAll({ where: { id: productIds } });
+            orderDetailsData.forEach(item => {
+                const product = products.find(p => p.id === item.product_id);
+                if (product) item.price = product.price;
+            });
+        }
 
         await OrderDetail.bulkCreate(orderDetailsData);
 
-        const orderDetails = await OrderDetail.findAll({
-            where: { order_id: order.id },
-            attributes: ['price', 'qty']
-        });
-
-        const totalPrice = orderDetails.reduce((sum, item) => {
+        const totalPrice = orderDetailsData.reduce((sum, item) => {
             return sum + item.price * item.qty;
         }, 0);
 
-        await Order.update({ total_price: totalPrice }, { where: { id: order.id } });
+        const finalPriceToSave = Number(final_price) || totalPrice;
 
-        await Cart.destroy({ where: { user_id } });
+        await order.update({
+            total_price: totalPrice,
+            discount_amount: Number(discount_amount) || 0,
+            final_price: finalPriceToSave
+        });
 
-        res.status(201).json({ message: "Tạo đơn hàng thành công", order });
+        const cartIds = items.map(i => i.cart_id);
+        if (cartIds.length) {
+            await Cart.destroy({ where: { id: cartIds } });
+        }
+
+        return res.status(201).json({
+            message: "Tạo đơn hàng thành công",
+            order_id: order.id
+        });
     } catch (error) {
         console.error("Lỗi tạo đơn hàng:", error);
-        res.status(500).json({ message: "Lỗi khi tạo đơn hàng", error });
+        return res.status(500).json({ message: "Lỗi khi tạo đơn hàng", error });
     }
 };
 
@@ -134,7 +170,6 @@ exports.deleteOrder = async (req, res) => {
     }
 };
 
-// Thêm chi tiết đơn hàng
 exports.addOrderDetail = async (req, res) => {
     const { product_id, qty, price } = req.body;
     try {
@@ -150,7 +185,6 @@ exports.addOrderDetail = async (req, res) => {
     }
 };
 
-// Lấy chi tiết đơn hàng
 exports.getOrderDetails = async (req, res) => {
     try {
         const details = await OrderDetail.findAll({
@@ -171,6 +205,7 @@ exports.getOrderDetailsByUserId = async (req, res) => {
             where: {
                 user_id,
             },
+            attributes: ['id', 'status', 'final_price', 'total_price', 'discount_amount', 'createdAt'],
             include: [
                 {
                     model: OrderDetail,

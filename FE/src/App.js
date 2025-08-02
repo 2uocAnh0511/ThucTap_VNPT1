@@ -42,7 +42,10 @@ import OrderDetail from './components/Admin/Pages/Order/Order-detail';
 import Comment from './components/Admin/Pages/Comment';
 import Orders from './components/Client/Pages/order';
 import Order_Detail from './components/Client/Pages/order/order_detail';
-
+import PromotionGetAll from './components/Admin/Pages/promotions/getAll';
+import PromotionCreate from './components/Admin/Pages/promotions/Create';
+import PromotionEdit from './components/Admin/Pages/promotions/Edit';
+import PromotionList from './components/Admin/Pages/promotionUsers/getAll';
 function App() {
   return (
     <>
@@ -140,6 +143,16 @@ function App() {
           <Route path="order/:id" element={<OrderDetail />} />
 
           <Route path="comments" element={<Comment />} />
+
+           <Route path="promotions">
+            <Route path="getAll" element={<PromotionGetAll />} />
+            <Route path="create" element={<PromotionCreate />} />
+            <Route path="edit/:id" element={<PromotionEdit />} />
+            {/* <Route path="applied/:id" element={<PromotionOrderListModal />} /> */}
+          </Route>
+            <Route path="promotionusers">
+            <Route path="getAll" element={<PromotionList />} />
+          </Route>
         </Route>
 
         {/* Nếu không khớp bất cứ route nào → về home hoặc login */}

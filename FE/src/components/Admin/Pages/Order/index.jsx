@@ -76,7 +76,9 @@ const OrderList = () => {
       <tr key={index}>
         <td>{value.id}</td>
         <td>{value.user?.name || "N/A"}</td>
-        <td>{value.total_price}</td>
+        <td className="text-end">
+          <div className="fw-bold text-success">Thành tiền: {Number(value.final_price).toLocaleString('vi-VN')}₫</div>
+        </td>
         <td>
           <select
             className="form-control"

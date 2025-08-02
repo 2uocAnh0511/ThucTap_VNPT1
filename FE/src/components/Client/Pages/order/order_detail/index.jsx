@@ -31,9 +31,7 @@ function Order_Detail() {
       axios.get(`${Constanst.DOMAIN_API}/api/orders/detail_user/${userId}`)
         .then(res => {
           const ordersData = res.data.data;
-          if (Array.isArray(ordersData)) {
-            setOrders(ordersData);
-          }
+          if (Array.isArray(ordersData)) setOrders(ordersData);
         })
         .catch(err => {
           console.error("Lỗi khi lấy danh sách đơn hàng:", err);
@@ -47,9 +45,7 @@ function Order_Detail() {
 
   const toggleOrder = (orderId) => {
     setExpandedOrderIds((prev) =>
-      prev.includes(orderId)
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
+      prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
     );
   };
 
@@ -93,27 +89,28 @@ function Order_Detail() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4 fw-bold">Đơn hàng của bạn</h2>
+    <div className="container mt-4 mb-5">
+      <h2 className="mb-4 fw-bold text-center text-primary">Đơn hàng của bạn</h2>
 
       {orders.length > 0 ? (
         orders.map((order) => (
-          <div key={order.id} className="card mb-3 shadow-sm">
-            <div className="card-header d-flex justify-content-between align-items-center">
+          <div key={order.id} className="card mb-4 shadow-sm border-0">
+            <div className="card-header bg-light d-flex justify-content-between align-items-center">
               <div>
-                <strong>Đơn #{order.id}</strong> | Trạng thái: <span className="text-primary">{order.status}</span>
+                <strong>Đơn hàng #{order.id}</strong>{" "}
+                <span className={`badge ${order.status === "Chờ xác nhận" ? "bg-warning text-dark" :
+                  order.status === "Đã hủy" ? "bg-danger" : "bg-success"}`}>
+                  {order.status}
+                </span>
               </div>
               <div>
                 {order.status === "Chờ xác nhận" && (
-                  <button
-                    className="btn btn-sm btn-danger me-2"
-                    onClick={() => handleCancelOrder(order.id)}
-                  >
+                  <button className="btn btn-sm btn-danger me-2" onClick={() => handleCancelOrder(order.id)}>
                     Hủy đơn
                   </button>
                 )}
                 <button
-                  className="btn btn-sm btn-outline-secondary"
+                  className="btn btn-sm btn-outline-primary"
                   onClick={() => toggleOrder(order.id)}
                 >
                   {expandedOrderIds.includes(order.id) ? "Ẩn chi tiết" : "Xem chi tiết"}
@@ -128,48 +125,71 @@ function Order_Detail() {
                   <p className="text-danger"><strong>Lý do hủy:</strong> {order.cancellation_reason}</p>
                 )}
 
-                <table className="table table-bordered table-hover text-center mt-2">
-                  <thead className="table-dark">
-                    <tr>
-                      <th>Sản phẩm</th>
-                      <th>Số lượng</th>
-                      <th className="text-end">Giá</th>
-                      <th className="text-end">Thành tiền</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array.isArray(order.order_details) && order.order_details.length > 0 ? (
-                      order.order_details.map((item, index) => (
-                        <tr key={index}>
-                          <td className="align-middle">{item.product?.title || "N/A"}</td>
-                          <td className="align-middle">{item.qty}</td>
-                          <td className="text-end align-middle">{formatPrice(item.price)}</td>
-                          <td className="text-end align-middle">{formatPrice(item.price * item.qty)}</td>
-                        </tr>
-                      ))
-                    ) : (
+                <div className="table-responsive">
+                  <table className="table table-bordered table-hover text-center mt-2">
+                    <thead className="table-dark">
                       <tr>
-                        <td colSpan="4">Không có chi tiết đơn hàng.</td>
+                        <th>Sản phẩm</th>
+                        <th>Số lượng</th>
+                        <th className="text-end">Giá</th>
+                        <th className="text-end">Thành tiền</th>
                       </tr>
-                    )}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th colSpan="3" className="text-end">Tổng cộng:</th>
-                      <th className="text-end">{formatPrice(order.total_price || 0)}</th>
-                    </tr>
-                  </tfoot>
-                </table>
+                    </thead>
+                    <tbody>
+                      {Array.isArray(order.order_details) && order.order_details.length > 0 ? (
+                        order.order_details.map((item, index) => (
+                          <tr key={index}>
+                            <td className="align-middle">{item.product?.title || "N/A"}</td>
+                            <td className="align-middle">{item.qty}</td>
+                            <td className="text-end align-middle">{formatPrice(item.price)}</td>
+                            <td className="text-end align-middle">{formatPrice(item.price * item.qty)}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="4">Không có chi tiết đơn hàng.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ backgroundColor: '#fff3cd' }}>
+                        <th colSpan="3" className="text-end fw-semibold">Tạm tính:</th>
+                        <th className="text-end">{formatPrice(order.total_price || 0)}</th>
+                      </tr>
+                      {order.discount_amount > 0 && (
+                        <tr style={{ backgroundColor: '#fde2e2' }}>
+                          <th colSpan="3" className="text-end fw-semibold">Giảm giá:</th>
+                          <th className="text-end text-danger">
+                            -{formatPrice(order.discount_amount)}
+                          </th>
+                        </tr>
+                      )}
+                      <tr style={{ backgroundColor: '#d4edda' }}>
+                        <th colSpan="3" className="text-end fw-bold">Thành tiền:</th>
+                        <th className="text-end align-middle">
+                          {formatPrice(order.final_price || order.total_price || 0)}
+                        </th>
+                      </tr>
+                      {order.promotion?.code && (
+                        <tr>
+                          <th colSpan="3" className="text-end fw-semibold">Mã khuyến mãi:</th>
+                          <th className="text-end align-middle text-primary">{order.promotion.code}</th>
+                        </tr>
+                      )}
+                    </tfoot>
+
+                  </table>
+                </div>
               </div>
             )}
           </div>
         ))
       ) : (
-        <p>Bạn chưa có đơn hàng nào.</p>
+        <p className="text-center text-muted">Bạn chưa có đơn hàng nào.</p>
       )}
 
       <div className="d-flex justify-content-start mt-3">
-        <a href="/order" className="btn btn-outline-primary btn-sm">
+        <a href="/order" className="btn btn-outline-secondary btn-sm">
           <i className="bi bi-arrow-left"></i> Quay lại
         </a>
       </div>

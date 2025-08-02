@@ -34,6 +34,10 @@ const HeaderAdmin = () => {
         <NavDropdown title={<><FaUsers className="me-2" /> Bình Luận</>} className="text-white">
           <NavDropdown.Item as={Link} to="/admin/comments">Danh sách Bình Luận</NavDropdown.Item>
         </NavDropdown>
+        <NavDropdown title={<><FaUsers className="me-2" />Giảm giá</>} className="text-white">
+          <NavDropdown.Item as={Link} to="/admin/promotions/getAll">Danh sách giảm giá</NavDropdown.Item>
+          <NavDropdown.Item as={Link} to="/admin/promotionusers/getAll">Danh sách khách hàng</NavDropdown.Item>
+        </NavDropdown>
       </Nav>
     </div>
   );

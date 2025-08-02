@@ -105,11 +105,14 @@ function Orders() {
       phone: form.phone,
       email: form.email || "",
       payment_method: form.paymentMethod,
-      total: getTotal(),
+      discount_amount: Number(location.state?.discountAmount) || 0,
+      final_price: Number(location.state?.finalPrice) || getTotal(),
+      promotion_id: location.state?.selectedVoucher?.id || null,
       items: orderItems.map((item) => ({
         cart_id: item.id,
         product_id: item.product.id,
         quantity: item.qty,
+        product_price: item.product.price
       })),
     };
 
@@ -164,7 +167,18 @@ function Orders() {
               <tr style={{ backgroundColor: "#f8f9fa" }}>
                 <td colSpan={4}></td>
                 <td>
-                  <strong>Tổng cộng: {formatPrice(getTotal())}</strong>
+                  <div>
+                    <div>Tạm tính: {formatPrice(getTotal())}</div>
+                    <div>Giảm giá: {formatPrice(location.state?.discountAmount || 0)}</div>
+                    <div>
+                      <strong>
+                        Tổng cộng:{" "}
+                        {formatPrice(
+                          location.state?.finalPrice || getTotal()
+                        )}
+                      </strong>
+                    </div>
+                  </div>
                 </td>
                 <td></td>
               </tr>

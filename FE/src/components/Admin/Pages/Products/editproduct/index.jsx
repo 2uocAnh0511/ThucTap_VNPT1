@@ -26,24 +26,15 @@ const EditProduct = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-   const fetchCategories = async () => {
-  try {
-    const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
-    const data = res.data?.data;
-
-    if (Array.isArray(data)) {
-      setCategories(data); // ✅ đảm bảo là mảng
-    } else {
-      console.warn("Danh mục không phải mảng:", data);
-      setCategories([]);
-    }
-  } catch (err) {
-    console.error("Lỗi khi tải danh mục:", err);
-    toast.error("Lỗi khi tải danh mục!");
-    setCategories([]); // fallback để tránh crash
-  }
-};
-
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
+        setCategories(res.data.data || []);
+      } catch (err) {
+        console.error("Lỗi khi tải danh mục:", err);
+        alert("Lỗi khi tải danh mục!");
+      }
+    };
     fetchCategories();
   }, []);
   useEffect(() => {
