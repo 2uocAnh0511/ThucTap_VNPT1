@@ -14,10 +14,9 @@ exports.products = async (req, res) => {
           model: categoryModel,
           as: "category",
           attributes: ["name"],
-          where: { status: 0 },
+          where: { status: 0 }, // Lọc category có status = 0
         },
       ],
-       order: [['createdAt', 'DESC'], ['id', 'DESC']] // 👉 Sắp xếp sản phẩm mới nhất lên đầu
     });
     res.json({ data });
   } catch (error) {
@@ -31,7 +30,7 @@ exports.editproductsbyId = async (req, res, next) => {
   try {
     const productId = req.params.id; // Lấy productId từ tham số URL
     const product = await productModel.findOne({ where: { id: productId } });
-    return res.status(200).json({ message: "Cập nhật sản phẩm thành công!", product });
+    return res.status(200).json({ message: "Cập nhậtđfdđ sản phẩm thành công!", product });
   } catch (error) {
     console.error("Lỗi khi cập nhật sản phẩm:", error);
     res.status(500).json({ message: "Lỗi server!" });
@@ -39,31 +38,38 @@ exports.editproductsbyId = async (req, res, next) => {
 };
 
 
-
 exports.postEditProduct = async (req, res, next) => {
   try {
-    const data = req.body;
     const productId = req.params.id;
-    // Cập nhật sản phẩm
-    const updated = await productModel.update(data, {
-      where: { id: productId },
-    });
+    const { name, price, short_description, category_id, image } = req.body;
 
-    if (updated === 0) {
-      return res.status(500).json({ message: "Không tìm thấy sản phẩm để cập nhật!" });
+    const updated = await productModel.update(
+      {
+        title: name, // ✅ map đúng cột
+        price,
+        short_description,
+        category_id,
+        image,
+      },
+      { where: { id: productId } }
+    );
+
+    if (updated[0] === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm để cập nhật!" });
     }
-    // Lấy lại sản phẩm đã cập nhật để trả về
+
     const updatedProduct = await productModel.findOne({ where: { id: productId } });
-    res.status(200).json({
+
+    return res.status(200).json({
       message: "Cập nhật sản phẩm thành công!",
       product: updatedProduct,
     });
-
   } catch (error) {
     console.error("Lỗi cập nhật sản phẩm:", error);
     res.status(500).json({ message: "Lỗi server!" });
   }
 };
+
 
 
 
@@ -77,23 +83,32 @@ exports.addproducts = async (req, res, next) => {
   }
 };
 exports.create = async (req, res) => {
-  console.log(req.body);
-  
   try {
     const { name, price, short_description, category_id, image } = req.body;
+
+    // ✅ Kiểm tra trùng tên (title)
+    const existing = await productModel.findOne({ where: { title: name } });
+    if (existing) {
+      return res.status(400).json({ message: "Tên sản phẩm đã tồn tại!" });
+    }
+
+    // ✅ Tạo mới sản phẩm
     const product = await productModel.create({
       title: name,
       price,
       short_description,
       category_id,
-      image
+      image,
+      status: 0, // hiển thị mặc định
     });
+
     res.status(201).json(product);
   } catch (error) {
     console.error("Error creating product:", error.message, error);
     res.status(500).send(`Server error: ${error.message}`);
   }
 };
+
 
 
 

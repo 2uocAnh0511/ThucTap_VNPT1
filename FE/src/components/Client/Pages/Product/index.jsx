@@ -19,14 +19,23 @@ function Product() {
     getProduct();
   }, []);
 
-  const getCategory = async () => {
-    try {
-      const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
-      setCategories(res.data);
-    } catch (error) {
-      console.log("Error", error);
+ const getCategory = async () => {
+  try {
+    const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
+    const data = res.data?.data;
+
+    if (Array.isArray(data)) {
+      setCategories(data); // ✅ chính xác
+    } else {
+      console.warn("API không trả về mảng danh mục:", data);
+      setCategories([]);
     }
-  };
+  } catch (error) {
+    console.log("Error", error);
+    setCategories([]);
+  }
+};
+
 
   const getProduct = async () => {
     try {

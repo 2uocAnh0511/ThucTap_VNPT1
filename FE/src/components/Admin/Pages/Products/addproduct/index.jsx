@@ -5,6 +5,8 @@ import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { uploadToCloudinary } from "../../../../../Upload/uploadToCloudinary";
+import { toast } from "react-toastify";
+
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -18,68 +20,67 @@ const AddProduct = () => {
     reset,
   } = useForm();
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
-        setCategories(res.data);
-      } catch (err) {
-        console.error("Lỗi khi tải danh mục:", err);
-        alert("Lỗi khi tải danh mục!");
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const url = await uploadToCloudinary(file);
-        setImageUrl(url);
-        console.log("Ảnh đã upload:", url);
-      } catch (err) {
-        console.error("Lỗi upload ảnh:", err);
-        alert("Upload ảnh thất bại!");
-      }
-    }
-  };
-
-  const onSubmit = async (data) => {
+useEffect(() => {
+  const fetchCategories = async () => {
     try {
-      if (!imageUrl) {
-        alert("Vui lòng chọn và upload ảnh trước khi submit.");
-        return;
-      }
-
-      const productData = {
-        name: data.name,
-        category_id: data.category,
-        price: data.price,
-        short_description: data.short_description,
-        image: imageUrl,
-      };
-
-      console.log("sedads", productData);
-
-      const res = await axios.post(
-        `${Constanst.DOMAIN_API}/api/addproducts`,
-        productData
-      );
-
-      if (res.status === 200 || res.status === 201) {
-        alert("Thêm sản phẩm thành công!");
-        navigate("/admin/products");
-        reset();
-        setImageUrl(""); // reset ảnh
-      } else {
-        alert("Thêm sản phẩm thất bại!");
-      }
+      const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
+      setCategories(res.data);
     } catch (err) {
-      console.error("Lỗi thêm sản phẩm:", err);
-      alert("Đã xảy ra lỗi!");
+      console.error("Lỗi khi tải danh mục:", err);
+      toast.error("Lỗi khi tải danh mục!"); // ✅ toast
     }
   };
+  fetchCategories();
+}, []);
+
+const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    try {
+      const url = await uploadToCloudinary(file);
+      setImageUrl(url);
+      console.log("Ảnh đã upload:", url);
+      toast.success("Upload ảnh thành công!"); // ✅ thêm thông báo
+    } catch (err) {
+      console.error("Lỗi upload ảnh:", err);
+      toast.error("Upload ảnh thất bại!"); // ✅ toast
+    }
+  }
+};
+
+ const onSubmit = async (data) => {
+  try {
+    if (!imageUrl) {
+      toast.warning("Vui lòng chọn và upload ảnh trước khi submit."); // ✅ toast
+      return;
+    }
+
+    const productData = {
+      name: data.name,
+      category_id: data.category,
+      price: data.price,
+      short_description: data.short_description,
+      image: imageUrl,
+    };
+
+    const res = await axios.post(
+      `${Constanst.DOMAIN_API}/api/addproducts`,
+      productData
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      toast.success("Thêm sản phẩm thành công!"); // ✅ toast
+      navigate("/admin/products");
+      reset();
+      setImageUrl(""); // reset ảnh
+    } else {
+      toast.error("Thêm sản phẩm thất bại!"); // ✅ toast
+    }
+  } catch (err) {
+    console.error("Lỗi thêm sản phẩm:", err);
+    toast.error("Đã xảy ra lỗi!"); // ✅ toast
+  }
+};
 
   return (
     <Container className="mt-5">

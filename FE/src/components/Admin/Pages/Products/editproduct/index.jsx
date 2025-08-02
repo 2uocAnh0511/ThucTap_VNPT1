@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { uploadToCloudinary } from "../../../../../Upload/uploadToCloudinary";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify"; // ✅ Thêm toast
+
 
 const EditProduct = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -24,15 +26,24 @@ const EditProduct = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
-        setCategories(res.data);
-      } catch (err) {
-        console.error("Lỗi khi tải danh mục:", err);
-        alert("Lỗi khi tải danh mục!");
-      }
-    };
+   const fetchCategories = async () => {
+  try {
+    const res = await axios.get(`${Constanst.DOMAIN_API}/api/categories`);
+    const data = res.data?.data;
+
+    if (Array.isArray(data)) {
+      setCategories(data); // ✅ đảm bảo là mảng
+    } else {
+      console.warn("Danh mục không phải mảng:", data);
+      setCategories([]);
+    }
+  } catch (err) {
+    console.error("Lỗi khi tải danh mục:", err);
+    toast.error("Lỗi khi tải danh mục!");
+    setCategories([]); // fallback để tránh crash
+  }
+};
+
     fetchCategories();
   }, []);
   useEffect(() => {
@@ -61,13 +72,11 @@ const EditProduct = () => {
       } else {
         throw new Error(`Lỗi từ server: ${res.status}`);
       }
-    } catch (err) {
-      console.error(
-        "Lỗi khi lấy sản phẩm:",
-        err.response ? err.response.data : err
-      );
-      alert("Không thể tải sản phẩm!");
-    } finally {
+ } catch (err) {
+  console.error("Lỗi khi lấy sản phẩm:", err.response ? err.response.data : err);
+  toast.error("Không thể tải sản phẩm!"); // ✅ toast
+}
+ finally {
       setLoading(false);
     }
   };
@@ -79,19 +88,21 @@ const EditProduct = () => {
         const url = await uploadToCloudinary(file);
         setImageUrl(url);
         console.log("Ảnh đã upload:", url);
-      } catch (err) {
-        console.error("Lỗi upload ảnh:", err);
-        alert("Upload ảnh thất bại!");
-      }
+    } catch (err) {
+  console.error("Lỗi upload ảnh:", err);
+  toast.error("Upload ảnh thất bại!"); // ✅ toast
+}
+
     }
   };
 
   const onSubmit = async (data) => {
     try {
-      if (!imageUrl) {
-        alert("Vui lòng chọn và upload ảnh trước khi submit.");
-        return;
-      }
+     if (!imageUrl) {
+  toast.warning("Vui lòng chọn và upload ảnh trước khi submit."); // ✅ toast
+  return;
+}
+
 
       const updatedProductData = {
         name: data.name,
@@ -106,16 +117,20 @@ const EditProduct = () => {
         updatedProductData
       );
 
-      if (res.status === 200 || res.status === 201) {
-        alert("Cập nhật sản phẩm thành công!");
-        navigate("/admin/products");
-      } else {
-        alert("Cập nhật sản phẩm thất bại!");
-      }
-    } catch (err) {
-      console.error("Lỗi khi cập nhật sản phẩm:", err);
-      alert("Đã xảy ra lỗi!");
-    }
+     if (res.status === 200 || res.status === 201) {
+  toast.success("Cập nhật sản phẩm thành công!"); // ✅ toast
+  setTimeout(() => {
+    navigate("/admin/products"); // ⏳ Chờ toast hiển thị xong rồi chuyển trang
+  }, 1000);
+} else {
+  toast.error("Cập nhật sản phẩm thất bại!"); // ✅ toast
+}
+
+   } catch (err) {
+  console.error("Lỗi khi cập nhật sản phẩm:", err);
+  toast.error("Đã xảy ra lỗi!"); // ✅ toast
+}
+
   };
 
   if (!currentProduct) {
